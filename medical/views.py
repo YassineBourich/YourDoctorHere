@@ -6,6 +6,7 @@ print("Hello World")
 print("Hello World")
 print("Hello World")
 print("Hello World")
+<<<<<<< HEAD
 print("Hello World")
 
 print("Hello World")
@@ -28,4 +29,6 @@ print("Hello World")
 print("Hello World")
 print("Hello World")
 print("Hello World")
+=======
+>>>>>>> main
 print("Hello World")
