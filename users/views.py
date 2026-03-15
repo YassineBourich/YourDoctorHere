@@ -2,5 +2,14 @@ from django.shortcuts import render
 
 # Create your views here.
 def home(request):
-    print("Helo")
-    return
+    pass
+
+def register(request):
+    pass
+
+def login(request):
+    pass
+
+def verify_email(request):
+    pass
+
