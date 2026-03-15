@@ -90,12 +90,25 @@ class Doctor(BaseProfile):
     bio = models.TextField()
     is_verified = models.BooleanField(default=False)
 
+class DoctorHospitalAssignment(models.Model):
+    doctor = models.ForeignKey('Doctor', on_delete=models.CASCADE)
+    hospital = models.ForeignKey('Hospital', on_delete=models.CASCADE)
+    
+    joined_at = models.DateField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('doctor', 'hospital')
+
 class Hospital(BaseProfile):
     name = models.CharField(max_length=50)
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
         related_name='hospital',
+    )
+    staff_doctors = models.ManyToManyField(Doctor, 
+        through=DoctorHospitalAssignment, 
+        related_name='hospitals'
     )
     license_number = models.CharField(max_length=100, unique=True)
     website = models.URLField(blank=True)
