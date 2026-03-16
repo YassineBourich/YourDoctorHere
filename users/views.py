@@ -2,12 +2,16 @@ from django.shortcuts import render, redirect
 from .forms import UserRegistrationForm, PatientForm, DoctorForm, HospitalForm
 from . import entities
 from django.contrib.sites.shortcuts import get_current_site
-from django.utils.http import urlsafe_base64_encode
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.html import strip_tags
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login
+from django.contrib import messages
+from .models import User
 
 # Create your views here.
 def home(request):
@@ -88,10 +92,35 @@ def send_verification_email(request, user):
     msg.send()
 
 def login(request):
-    pass
+    if request.method == 'POST':
+        user_form = AuthenticationForm(request, data=request.POST)
+        if user_form.is_valid():
+            user = user_form.get_user()
+            login(request, user)
+            
+            messages.success(request, f"Welcome back, {user.email}!")
+            return redirect('home')
+    else:
+        user_form = AuthenticationForm()
+        
+    context = {
+        'user_form': user_form,
+    }
+    return render(request, 'users/registration/login.html', context)
 
-def verify_email(request):
-    pass
+def verify_email(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        return redirect('home')
+    else:
+        return render(request, 'activation_invalid.html')
 
 def doctor_profile(request, id):
     return render(request, "users/profiles/doctor_profile.html", {})
