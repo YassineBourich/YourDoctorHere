@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div>
+    <div>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="entity" value="{{ PATIENT }}">
+            {{ user_form.as_div }}
+
+            <div>
+                <input type="submit" value="Login">
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+
+{% endblock %}

@@ -3,9 +3,11 @@ from . import views
 
 urlpatterns = [
     path('', views.home, name='home'),
-    path('registration/', views.register, name="registration"),
-    path('login/', views.login, name="login"),
-    path('email_verification/', views.verify_email, name="email_verificaton"),
+    path('registration/', views.registration_view, name="registration"),
+    path('send-verification-email/<uuid:uuid>/', views.send_verification_email_view, name="send_verification_email"),
+    path('account-activation/<uuid:uuid>/', views.wait_for_activation_view, name="wait_for_activation"),
+    path('login/', views.login_view, name="login"),
+    path('activate/<str:uidb64>/<str:token>/', views.verify_email, name="email_verificaton"),
     path('doctors/<uuid:id>/', views.doctor_profile, name="doctor_profile"),
     path('hospitals/<uuid:id>/', views.hospital_profile, name="hospital_profile"),
 ]

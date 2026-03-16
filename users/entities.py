@@ -1,3 +1,4 @@
 PATIENT = 'Patient'
 DOCTOR = 'Doctor'
-HOSPITAL = 'Hospital'
+
+ENTITIES = [PATIENT, DOCTOR]

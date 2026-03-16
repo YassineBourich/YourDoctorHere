@@ -1,5 +1,5 @@
 from django import forms
-from .models import User, Patient, Doctor, Hospital
+from .models import User, Patient, Doctor
 
 class UserRegistrationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
@@ -16,8 +16,3 @@ class DoctorForm(forms.ModelForm):
     class Meta:
         model = Doctor
         exclude = ['user', 'specialty', 'is_verified']
-
-class HospitalForm(forms.ModelForm):
-    class Meta:
-        model = Hospital
-        exclude = ['user', 'staff_doctors']

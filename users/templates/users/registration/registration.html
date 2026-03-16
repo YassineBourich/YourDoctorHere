@@ -29,16 +29,6 @@
                 <input type="submit" value="Sign In">
             </div>
         </form>
-        <form method="post">
-            {% csrf_token %}
-            <input type="hidden" name="entity" value="{{ HOSPITAL }}">
-            {{ user_form.as_div }}
-            {{ hospital_profile_form.as_div }}
-            
-            <div>
-                <input type="submit" value="Sign In">
-            </div>
-        </form>
     </div>
 </div>
 {% endblock %}

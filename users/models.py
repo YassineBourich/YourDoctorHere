@@ -11,10 +11,9 @@ class UserManager(BaseUserManager):
         if not email:
             raise ValueError("Email is required for healthcare accounts")
         
-        email = self.normalize_email(email)
+        email = self.normalize_email(email).lower()
         user = self.model(email=email, **extra_fields)
         
-        # This is the most important security step:
         user.set_password(password) # Scrambles the password
         
         user.save(using=self._db)
@@ -28,7 +27,6 @@ class UserManager(BaseUserManager):
 class Entity(models.TextChoices):
     PATIENT = entities.PATIENT
     DOCTOR = entities.DOCTOR
-    HOSPITAL = entities.HOSPITAL
 
 class Gender(models.TextChoices):
     MALE = 'MALE'
@@ -98,35 +96,6 @@ class Doctor(BaseProfile):
     city = models.CharField(max_length=100)
     bio = models.TextField()
     is_verified = models.BooleanField(default=False)
-
-class DoctorHospitalAssignment(models.Model):
-    doctor = models.ForeignKey('Doctor', on_delete=models.CASCADE)
-    hospital = models.ForeignKey('Hospital', on_delete=models.CASCADE)
-    
-    joined_at = models.DateField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ('doctor', 'hospital')
-
-class Hospital(BaseProfile):
-    name = models.CharField(max_length=50)
-    user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE,
-        related_name='hospital',
-    )
-    staff_doctors = models.ManyToManyField(
-        Doctor,
-        through=DoctorHospitalAssignment, 
-        related_name='hospitals'
-    )
-    license_number = models.CharField(max_length=100, unique=True)
-    website = models.URLField(blank=True)
-    is_emergency_24_7 = models.BooleanField(default=False)
-    hospital_type = models.CharField(
-        max_length=50, 
-        choices=[('PUB', 'Public'), ('PRI', 'Private'), ('CLI', 'Clinic')]
-    )
 
 
 """
