@@ -3,6 +3,7 @@ from django.db import models
 from django_countries.fields import CountryField
 import uuid
 from django.utils.text import slugify
+from . import entities
 
 
 class UserManager(BaseUserManager):
@@ -25,15 +26,16 @@ class UserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 class Entity(models.TextChoices):
-    PATIENT = 'Patient'
-    DOCTOR = 'Doctor'
-    HOSPITAL = 'Hospital'
+    PATIENT = entities.PATIENT
+    DOCTOR = entities.DOCTOR
+    HOSPITAL = entities.HOSPITAL
 
 class Gender(models.TextChoices):
     MALE = 'MALE'
     FEMALE = 'FEMALE'
 
 class User(AbstractUser):
+    username = None
     email = models.EmailField(unique=True)
     entity = models.CharField(choices=Entity.choices, default=Entity.PATIENT)
     is_active = models.BooleanField(default=False)
@@ -57,9 +59,16 @@ class Speciality(models.Model):
 
 class BaseProfile(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    avater = models.ImageField(upload_to='avatars/%Y/%m', null=True, blank=True)
     Nationality = CountryField(blank_label='(select country)', default='MA')
     tel = models.CharField(max_length=20)
     address = models.TextField()
+
+    @property
+    def avatar_url(self):
+        if self.avatar and hasattr(self.avatar, 'url'):
+            return self.avatar.url
+        return '/static/images/default_avatar.jpg'
 
     class Meta:
         abstract = True
@@ -83,7 +92,7 @@ class Doctor(BaseProfile):
         on_delete=models.CASCADE,
         related_name='doctor',
     )
-    specialty = models.ForeignKey(Speciality , on_delete=models.PROTECT, related_name='doctors')
+    specialty = models.ForeignKey(Speciality , on_delete=models.PROTECT, related_name='doctors', null=True)
     license_number = models.CharField(max_length=50, unique = True)
     consultation_fee = models.DecimalField(max_digits=10, decimal_places=2)
     city = models.CharField(max_length=100)
