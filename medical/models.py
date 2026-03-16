@@ -1,5 +1,7 @@
 from django.db import models
-
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+import uuid
 """
 class WeeklySlot(models.Model):
     DAY_CHOICES = [
@@ -26,6 +28,7 @@ class WeeklySlot(models.Model):
 """
 
 class Appointment(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     STATUS_CHOICES = [
         ('requested', 'Requested'),
         ('confirmed', 'Confirmed'),
@@ -33,6 +36,7 @@ class Appointment(models.Model):
         ('cancelled', 'Cancelled'),
     ]
 
+    # ghi bach nchre7, i identify the appointment by the patient and the doctor, that's why i have both Foreign Keys here.
     patient = models.ForeignKey(
         'users.Patient',
         on_delete=models.CASCADE,
@@ -100,3 +104,13 @@ class PatientHistory(models.Model):
 
     def __str__(self):
         return f"History: {self.patient} @ {self.at:%Y-%m-%d}"
+
+
+
+@receiver(post_save, sender=Appointment)
+def create_history_on_completion(sender, instance, **kwargs):
+    if instance.status == 'completed':
+        PatientHistory.objects.get_or_create(
+            appointment=instance,
+            defaults={'patient': instance.patient}
+        )
