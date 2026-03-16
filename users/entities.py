@@ -1,0 +1,4 @@
+PATIENT = 'Patient'
+DOCTOR = 'Doctor'
+
+ENTITIES = [PATIENT, DOCTOR]

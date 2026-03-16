@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div>
+    <div>
+        <button id="patient-btn">Patient</button>
+        <button id="doctor-btn">Doctor</button>
+        <button id="hospital-btn">Organization</button>
+    </div>
+    <div>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="entity" value="{{ PATIENT }}">
+            {{ user_form.as_div }}
+            {{ patient_profile_form.as_div }}
+
+            <div>
+                <input type="submit" value="Sign In">
+            </div>
+        </form>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="entity" value="{{ DOCTOR }}">
+            {{ user_form.as_div }}
+            {{ doctor_profile_form.as_div }}
+
+            <div>
+                <input type="submit" value="Sign In">
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script src="{% static 'users/js/registration.js' %}"></script>
+{% endblock %}

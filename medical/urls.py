@@ -1,7 +1,8 @@
 from django.urls import path
 from . import views
 
-urlpatterns = [
+urlpatterns = []
+"""
     # Appointment booking flow
     path('doctors/<uuid:doctor_uuid>/slots/', views.doctor_slots, name='doctor_slots'),
     path('appointments/<uuid:appointment_uuid>/book/', views.book_appointment, name='book_appointment'),
@@ -14,4 +15,4 @@ urlpatterns = [
 
     # Patient history
     path('patients/me/history/', views.my_history, name='my_history'),
-]
+]"""

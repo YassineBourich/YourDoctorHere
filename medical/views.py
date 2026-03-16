@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from urllib3 import request
 from .models import Appointment, MedicalNote, PatientHistory
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -21,8 +22,11 @@ def get_doctor(user):
 @login_required
 def appointment_detail(request, appointment_uuid):
     appointment = get_object_or_404(Appointment, uuid=appointment_uuid)
-    patient = get_patient(request.user)
-    doctor = get_doctor(request.user)
+    entity = request.user.entity
+    doctor = request.user.entity
+
+    if entity == 'Patient':
+        pass
 
     is_the_patient = patient and appointment.patient == patient
     is_the_doctor = doctor and appointment.doctor == doctor
