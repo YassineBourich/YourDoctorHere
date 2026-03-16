@@ -115,7 +115,8 @@ class Hospital(BaseProfile):
         on_delete=models.CASCADE,
         related_name='hospital',
     )
-    staff_doctors = models.ManyToManyField(Doctor, F
+    staff_doctors = models.ManyToManyField(
+        Doctor,
         through=DoctorHospitalAssignment, 
         related_name='hospitals'
     )
