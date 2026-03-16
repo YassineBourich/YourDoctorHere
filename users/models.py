@@ -106,7 +106,7 @@ class Hospital(BaseProfile):
         on_delete=models.CASCADE,
         related_name='hospital',
     )
-    staff_doctors = models.ManyToManyField(Doctor, 
+    staff_doctors = models.ManyToManyField(Doctor, F
         through=DoctorHospitalAssignment, 
         related_name='hospitals'
     )
@@ -118,6 +118,13 @@ class Hospital(BaseProfile):
         choices=[('PUB', 'Public'), ('PRI', 'Private'), ('CLI', 'Clinic')]
     )
 
+
+"""
+    Moved here from users app to avoid circular Foreign Key: 
+    PatientHistory living in the users app creates a circular dependency problem: it needs
+    to reference Appointment from your medical app, but medical already references users.
+"""
+"""
 class PatientHistory(models.Model):
     at = models.DateTimeField(auto_now_add=True)
     patient = models.ForeignKey(
@@ -126,3 +133,5 @@ class PatientHistory(models.Model):
         related_name='history'
     )
     #appointment = 
+
+"""
