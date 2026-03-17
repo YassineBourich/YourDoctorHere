@@ -36,7 +36,8 @@ class User(AbstractUser):
     username = None
     email = models.EmailField(unique=True)
     entity = models.CharField(choices=Entity.choices, default=Entity.PATIENT)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    is_email_verified = models.BooleanField(default=False)
 
     # Tell Django that 'email' is the new ID for login
     USERNAME_FIELD = 'email'

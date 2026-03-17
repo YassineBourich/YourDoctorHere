@@ -1,4 +1,5 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
 from .forms import UserRegistrationForm, PatientForm, DoctorForm
 from . import entities
 from django.contrib import messages
@@ -7,9 +8,16 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.forms import AuthenticationForm
 from .models import User
 from django.db.models import Q
-from .utils import get_user_by_uuid, register_user_profile, send_verification_email
+from .utils import (
+    get_user_by_uuid_or_404, 
+    register_user_profile, 
+    send_verification_email, 
+    send_email_and_redirect,
+    get_profile_of_user_or_404,
+)
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from .models import Patient, Doctor
 
 # Create your views here.
 def home(request):
@@ -58,13 +66,18 @@ def registration_view(request):
 
 # Send Email Verification View
 def send_verification_email_view(request, uuid):
-    user = get_user_by_uuid(uuid)
-    send_verification_email(request, user)
-    return redirect("wait_for_activation", uuid)
+    user = get_user_by_uuid_or_404(uuid)
+    if user.is_email_verified:
+        if request.user.is_authenticated:
+            return redirect('home')
+        else:
+            return redirect('login')
+    return send_email_and_redirect(request, user, uuid)
 
 # Wait for Activation View
 def wait_for_activation_view(request, uuid):
-    return render(request, "users/emails/wait_for_activation.html", {'user_uuid': uuid})
+    user = get_user_by_uuid_or_404(uuid)
+    return render(request, "users/emails/wait_for_activation.html", {'user_uuid': uuid, 'user': user})
 
 # Login View
 def login_view(request):
@@ -76,10 +89,15 @@ def login_view(request):
         if user_form.is_valid():
             # Authenticate user and login
             user = user_form.get_user()
-            login(request, user)
+            # If the user is not active, send activation email
+            if user.is_email_verified:
+                login(request, user)
             
-            messages.success(request, f"Welcome back, {user.email}!")
-            return redirect('home')
+                messages.success(request, f"Welcome back, {user.email}!")
+                return redirect('home')
+            else:
+                send_verification_email(request, user)
+                return redirect('send_verification_email', get_profile_of_user_or_404(user).uuid)
     else:
         user_form = AuthenticationForm()
         
@@ -99,17 +117,32 @@ def verify_email_view(request, uidb64, token):
 
     # If user exists and tken is valid then activate account
     if user is not None and default_token_generator.check_token(user, token):
-        user.is_active = True
+        user.is_email_verified = True
         user.save()
-        return redirect('home')
+        return redirect('login')
     else:
         # Otherwise return activation invalid page
         return render(request, 'users/emails/activation_invalid.html')
+    
+def check_email_verification(request, uuid):
+    user = get_user_by_uuid_or_404(uuid)
+    return JsonResponse({'is_email_verified': user.is_email_verified})
 
 @login_required
-def doctor_profile(request, id):
-    return render(request, "users/profiles/doctor_profile.html", {})
+def patient_profile_view(request, id):
+    user = get_user_by_uuid_or_404(id)
+    profile = get_object_or_404(Patient, uuid=id)
+    history = profile.history
+    is_me = False
+    if get_profile_of_user_or_404(request.user).uuid == id:
+        is_me = True
+    return render(request, "users/profiles/profile.html", {'user': user, 'profile': profile, 'history': history, 'is_me': is_me})
 
 @login_required
-def hospital_profile(request, id):
-    return render(request, "users/profiles/hospital_profile.html", {})
+def doctor_profile_view(request, id):
+    user = get_user_by_uuid_or_404(id)
+    profile = get_object_or_404(Doctor, uuid=id)
+    is_me = False
+    if get_profile_of_user_or_404(request.user).uuid == id:
+        is_me = True
+    return render(request, "users/profiles/profile.html", {'user': user, 'profile': profile, 'history': None, 'is_me': is_me})
