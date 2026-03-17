@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 import uuid
-"""
+
 class WeeklySlot(models.Model):
     DAY_CHOICES = [
         (0, 'Monday'), (1, 'Tuesday'), (2, 'Wednesday'),
@@ -25,12 +25,11 @@ class WeeklySlot(models.Model):
 
     def __str__(self):
         return f"Dr.{self.doctor.last_name} — {self.get_day_of_week_display()} {self.start_time}"
-"""
+
 
 class Appointment(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     STATUS_CHOICES = [
-        ('requested', 'Requested'),
         ('confirmed', 'Confirmed'),
         ('completed', 'Completed'),
         ('cancelled', 'Cancelled'),
@@ -52,7 +51,7 @@ class Appointment(models.Model):
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default='requested'
+        default='confirmed' # i confirm immediately after booking, the doctor can later change it to completed or cancelled;
     )
     reason = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

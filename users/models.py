@@ -103,7 +103,7 @@ class Doctor(BaseProfile):
     Moved here from users app to avoid circular Foreign Key: 
     PatientHistory living in the users app creates a circular dependency problem: it needs
     to reference Appointment from your medical app, but medical already references users.
-"""
+    """
 """
 class PatientHistory(models.Model):
     at = models.DateTimeField(auto_now_add=True)
