@@ -19,5 +19,4 @@ urlpatterns = [
     path('doctors/<uuid:id>/delete/', views.doctor_profile, name="doctor_profile"),
     path('patients/<uuid:id>/edit/', None, name=""),
     path('patients/<uuid:id>/delete/', None, name=""),
-    path('patients/<uuid:id>/history/', None, name=""),
     """
