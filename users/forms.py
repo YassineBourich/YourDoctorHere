@@ -15,4 +15,4 @@ class PatientForm(forms.ModelForm):
 class DoctorForm(forms.ModelForm):
     class Meta:
         model = Doctor
-        exclude = ['user', 'specialty', 'is_verified']
+        exclude = ['user', 'is_verified']

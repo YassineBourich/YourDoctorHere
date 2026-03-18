@@ -46,16 +46,6 @@ class User(AbstractUser):
     # Connect the Manager to this Model
     objects = UserManager()
 
-class Speciality(models.Model):
-    slug = models.SlugField(max_length=200)
-    name = models.CharField(max_length=200)
-    description = models.TextField()
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
-
 class BaseProfile(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     avater = models.ImageField(upload_to='avatars/%Y/%m', null=True, blank=True)
@@ -91,7 +81,7 @@ class Doctor(BaseProfile):
         on_delete=models.CASCADE,
         related_name='doctor',
     )
-    specialty = models.ForeignKey(Speciality , on_delete=models.PROTECT, related_name='doctors', null=True)
+    specialty = models.CharField(max_length=200, null=True, blank=True)
     license_number = models.CharField(max_length=50, unique = True)
     consultation_fee = models.DecimalField(max_digits=10, decimal_places=2)
     city = models.CharField(max_length=100)
