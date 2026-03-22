@@ -11,7 +11,7 @@ prof_edit_btn.onclick = (e) => {
 
 pass_change_btn.onclick = (e) => {
     e.preventDefault();
-    window.location.href = "";
+    window.location.href = "/" + extention + "/change-password/";
 }
 
 acc_del_btn.onclick = (e) => {

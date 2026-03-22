@@ -5,7 +5,7 @@ from . import entities
 from django.contrib import messages
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from .models import User
 from django.db.models import Q
 from .utils import (
@@ -15,7 +15,7 @@ from .utils import (
     send_email_and_redirect,
     get_profile_of_user_or_404,
 )
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from .models import Patient, Doctor
 from medical.models import PatientHistory
@@ -193,3 +193,24 @@ def profile_delete_view(request):
             messages.error(request, "Incorrect password. Deletion canceled.")
 
     return render(request, "users/profiles/profile_delete.html")
+
+@login_required
+def change_password_view(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        
+        if form.is_valid():
+            user = form.save()
+        
+            # When you change a password, Django's session hash changes. 
+            # This function updates the session so the user isn't kicked out.
+            update_session_auth_hash(request, user)
+            
+            messages.success(request, 'Your password was successfully updated!')
+            return redirect('profile')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = PasswordChangeForm(request.user)
+        
+    return render(request, 'change_password.html', {'form': form})

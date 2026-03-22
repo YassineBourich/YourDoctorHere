@@ -14,9 +14,11 @@ urlpatterns = [
     path('doctors/<uuid:id>/', views.doctor_profile_view, name="doctor_profile"),
     path('doctors/edit/', views.profile_edit_view, name="doctor_profile_edit"),
     path('doctors/delete/', views.profile_delete_view, name="doctor_profile_delete"),
+    path('doctors/change-password/', views.change_password_view, name="doctors_change_password"),
     path('patients/<uuid:id>/', views.patient_profile_view, name="patient_profile"),
     path('patients/edit/', views.profile_edit_view, name="patient_profile_edit"),
     path('patients/delete/', views.profile_delete_view, name="patient_profile_delete"),
+    path('patients/change-password/', views.change_password_view, name="patients_change_password"),
 ]
 
 """path('doctor_validation/', None, name=""),
