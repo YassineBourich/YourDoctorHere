@@ -18,6 +18,7 @@ from .utils import (
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from .models import Patient, Doctor
+from medical.models import PatientHistory
 
 # Create your views here.
 def home(request):
@@ -132,11 +133,11 @@ def check_email_verification(request, uuid):
 def patient_profile_view(request, id):
     user = get_user_by_uuid_or_404(id)
     profile = get_object_or_404(Patient, uuid=id)
-    history = profile.history
+    history = PatientHistory.objects.filter(patient=profile).order_by('-at')[:5]
     is_me = False
     if get_profile_of_user_or_404(request.user).uuid == id:
         is_me = True
-    return render(request, "users/profiles/profile.html", {'user': user, 'profile': profile, 'history': history, 'is_me': is_me})
+    return render(request, "users/profiles/profile.html", {'user': user, 'profile': profile, 'history': history, 'is_me': is_me, 'entities': {'PATIENT': entities.PATIENT, 'DOCTOR': entities.DOCTOR}})
 
 @login_required
 def doctor_profile_view(request, id):
@@ -145,4 +146,12 @@ def doctor_profile_view(request, id):
     is_me = False
     if get_profile_of_user_or_404(request.user).uuid == id:
         is_me = True
-    return render(request, "users/profiles/profile.html", {'user': user, 'profile': profile, 'history': None, 'is_me': is_me})
+    return render(request, "users/profiles/profile.html", {'user': user, 'profile': profile, 'history': None, 'is_me': is_me, 'entities': {'PATIENT': entities.PATIENT, 'DOCTOR': entities.DOCTOR}})
+
+@login_required
+def profile_edit_view(request):
+    pass
+
+@login_required
+def profile_delete_view(request):
+    pass

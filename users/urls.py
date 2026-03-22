@@ -10,13 +10,13 @@ urlpatterns = [
     path('login/', views.login_view, name="login"),
     path('activate/<str:uidb64>/<str:token>/', views.verify_email_view, name="email_verificaton"),
     path('doctors/<uuid:id>/', views.doctor_profile_view, name="doctor_profile"),
+    path('doctors/edit/', views.profile_edit_view, name="doctor_profile_edit"),
+    path('doctors/delete/', views.profile_delete_view, name="doctor_profile_delete"),
     path('patients/<uuid:id>/', views.patient_profile_view, name="patient_profile"),
+    path('patients/edit/', views.profile_edit_view, name="patient_profile_edit"),
+    path('patients/delete/', views.profile_delete_view, name="patient_profile_delete"),
 ]
 
 """path('doctor_validation/', None, name=""),
     path('doctors/', None, name=""),
-    path('doctors/<uuid:id>/edit/', views.doctor_profile, name="doctor_profile"),
-    path('doctors/<uuid:id>/delete/', views.doctor_profile, name="doctor_profile"),
-    path('patients/<uuid:id>/edit/', None, name=""),
-    path('patients/<uuid:id>/delete/', None, name=""),
     """

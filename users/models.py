@@ -48,6 +48,8 @@ class User(AbstractUser):
 
 class BaseProfile(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
     avater = models.ImageField(upload_to='avatars/%Y/%m', null=True, blank=True)
     Nationality = CountryField(blank_label='(select country)', default='MA')
     tel = models.CharField(max_length=20)
@@ -63,8 +65,6 @@ class BaseProfile(models.Model):
         abstract = True
 
 class Patient(BaseProfile):
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
@@ -74,8 +74,6 @@ class Patient(BaseProfile):
     gender = models.CharField(max_length=20, choices=Gender.choices, default=None)
 
 class Doctor(BaseProfile):
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,

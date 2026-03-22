@@ -1,1 +1,54 @@
-<h1>doiy</h1>
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div>
+    <div>
+        <div class="profile_avatar">
+            <img src="{{ profile.avatar_url() }}" alt="">
+        </div>
+        <div>
+            <h2>{{ profile.first_name }} {{profile.last_name | upper }}</h2>
+            <p>{{ user.email }}</p>
+            <p>{{ user.entity }}</p>
+        </div>
+        {% if user.entity == entities.DOCTOR %}
+            <div>
+                {{ profile.is_verified }}
+            </div>
+        {% endif %}
+    </div>
+    {% if is_me %}
+    <div>
+        <button id="prof_edit_btn">Edit profile</button>
+        <button id="pass_change_btn">Change Password</button>
+        <button id="acc_del_btn">Delete Account</button>
+    </div>
+    {% endif %}
+    <div>
+        <div>Nationality: {{ profile.Nationality }}</div>
+        <div>Tel: {{ profile.tel }}</div>
+        <div>Address: {{ profile.address }}</div>
+        {% if user.entity == entities.PATIENT %}
+            <div>Birth Date: {{ profile.birth_date }}</div>
+            <div>Gender: {{ profile.gender }}</div>
+        {% else %}
+            <div>Bio: {{ profile.bio }}</div>
+            <div>Speciality: {{ profile.speciality }}</div>
+            <div>Lisence Number: {{ profile.license_number }}</div>
+            <div>Consultation fee: {{ profile.consultation_fee }}</div>
+            <div>City: {{ profile.city }}</div>
+        {% endif %}
+    </div>
+    {% if history %}
+    <div>
+
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script src="{% static 'users/js/profile.js' %}"></script>
+{% endblock %}
