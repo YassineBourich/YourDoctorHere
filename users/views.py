@@ -15,7 +15,7 @@ from .utils import (
     send_email_and_redirect,
     get_profile_of_user_or_404,
 )
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from .models import Patient, Doctor
 from medical.models import PatientHistory
@@ -150,8 +150,46 @@ def doctor_profile_view(request, id):
 
 @login_required
 def profile_edit_view(request):
-    pass
+    profile = get_profile_of_user_or_404(request.user)
+    entity = request.user.entity
 
+    if request.method == 'POST':
+        if entity == entities.PATIENT:
+            edit_form = PatientForm(request.POST, request.FILES, instance=profile)
+        if entity == entities.DOCTOR:
+            edit_form = DoctorForm(request.POST, request.FILES, instance=profile)
+        else:
+            pass
+            
+        if edit_form.is_valid():
+            edit_form.save()
+            if entity == entities.PATIENT:
+                return redirect('patient_profile', profile.uuid)
+            if entity == entities.DOCTOR:
+                return redirect('doctor_profile', profile.uuid)
+            else:
+                pass
+    else:
+        if entity == entities.PATIENT:
+            edit_form = PatientForm(instance=profile)
+        if entity == entities.DOCTOR:
+            edit_form = DoctorForm(instance=profile)
+        else:
+            pass
+    
+    return render(request, 'users/profiles/profile_edit.html', {'edit_form': edit_form})
 @login_required
 def profile_delete_view(request):
-    pass
+    if request.method == "POST":
+        conf_password = request.POST.get('confirmation_password')
+        if request.user.check_password(conf_password):
+            user = request.user
+            profile = get_profile_of_user_or_404(user)
+            user.delete()
+            profile.delete()
+            logout(request)
+            return redirect('home')
+        else:
+            messages.error(request, "Incorrect password. Deletion canceled.")
+
+    return render(request, "users/profiles/profile_delete.html")

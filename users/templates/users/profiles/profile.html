@@ -4,8 +4,14 @@
 {% block content %}
 <div>
     <div>
+        {% if user.entity == entities.PATIENT %}
+            <input type="hidden" id="extention" value="patients">
+        {% endif %}
+        {% if user.entity == entities.DOCTOR %}
+            <input type="hidden" id="extention" value="doctors">
+        {% endif %}
         <div class="profile_avatar">
-            <img src="{{ profile.avatar_url() }}" alt="">
+            <img src="{{ profile.avatar_url }}" alt="">
         </div>
         <div>
             <h2>{{ profile.first_name }} {{profile.last_name | upper }}</h2>

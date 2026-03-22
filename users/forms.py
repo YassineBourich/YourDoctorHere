@@ -12,7 +12,21 @@ class PatientForm(forms.ModelForm):
         model = Patient
         exclude = ['user']
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # If this is an update lock the first and last name
+        if self.instance and self.instance.pk:
+            self.fields['first_name'].disabled = True
+            self.fields['last_name'].disabled = True
+
 class DoctorForm(forms.ModelForm):
     class Meta:
         model = Doctor
         exclude = ['user', 'is_verified']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # If this is an update lock the first and last name
+        if self.instance and self.instance.pk:
+            self.fields['first_name'].disabled = True
+            self.fields['last_name'].disabled = True

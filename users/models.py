@@ -50,7 +50,7 @@ class BaseProfile(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
-    avater = models.ImageField(upload_to='avatars/%Y/%m', null=True, blank=True)
+    avatar = models.ImageField(upload_to='avatars/%Y/%m', null=True, blank=True)
     Nationality = CountryField(blank_label='(select country)', default='MA')
     tel = models.CharField(max_length=20)
     address = models.TextField()
