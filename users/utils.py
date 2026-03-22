@@ -47,11 +47,11 @@ def get_profile_of_user_or_404(user):
     raise Http404("No profile matches the provided user")
 
 # Function to register a user with his profile form
-def register_user_profile(request, user_form, profile_form):
+def register_user_profile(request, user_form, profile_form, entity):
     if user_form.is_valid() and profile_form.is_valid():
         user = user_form.save(commit=False)
         user.set_password(user_form.cleaned_data['password'])   # Hash password
-        user.entity = entities.PATIENT
+        user.entity = entity
         user.save()
         send_verification_email(request, user)
         profile = profile_form.save(commit=False)

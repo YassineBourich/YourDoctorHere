@@ -39,13 +39,13 @@ def registration_view(request):
         # If ok, wait for email activation
         if entity == entities.PATIENT:
             patient_profile_form = PatientForm(request.POST, request.FILES)
-            uuid, ok = register_user_profile(request, user_form, patient_profile_form)
+            uuid, ok = register_user_profile(request, user_form, patient_profile_form, entity)
             if ok:
                 return redirect("wait_for_activation", uuid)
             
         elif entity == entities.DOCTOR:
             doctor_profile_form = DoctorForm(request.POST, request.FILES)
-            uuid, ok = register_user_profile(request, user_form, doctor_profile_form)
+            uuid, ok = register_user_profile(request, user_form, doctor_profile_form, entity)
             if ok:
                 return redirect("wait_for_activation", uuid)
         
@@ -201,16 +201,22 @@ def change_password_view(request):
         
         if form.is_valid():
             user = form.save()
+            profile = get_profile_of_user_or_404(user)
         
             # When you change a password, Django's session hash changes. 
             # This function updates the session so the user isn't kicked out.
             update_session_auth_hash(request, user)
             
             messages.success(request, 'Your password was successfully updated!')
-            return redirect('profile')
+            if profile.entity == entities.PATIENT:
+                return redirect('patient_profile', profile.uuid)
+            if profile.entity == entities.DOCTOR:
+                return redirect('doctor_profile', profile.uuid)
+            else:
+                pass
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
         form = PasswordChangeForm(request.user)
         
-    return render(request, 'change_password.html', {'form': form})
+    return render(request, 'users/change_password.html', {'form': form})
