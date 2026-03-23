@@ -61,8 +61,8 @@ def register_user_profile(request, user_form, profile_form, entity):
 
     return None, False
 
-# Function to send verification email
-def send_verification_email(request, user):
+# Function to send email to a user
+def send_email(request, user, URI, subject, template):
     # generate token
     token = default_token_generator.make_token(user)
     # encode user id
@@ -70,16 +70,15 @@ def send_verification_email(request, user):
     # resolve website domain
     domain = get_current_site(request).domain
 
-    activation_url = f"http://{domain}/activate/{uid}/{token}/"
+    activation_url = f"http://{domain}/{URI}/{uid}/{token}/"
 
     # email data
-    subject = 'Verify your YourDoctorHere Account'
     from_email = 'noreply@yourdoctorhere.com'
     to = user.email
 
     # email body with alternative HTML design
     context = {'user': user, 'activation_url': activation_url}
-    html_content = render_to_string('users/emails/email_verification_template.html', context)
+    html_content = render_to_string(template, context)
     text_content = strip_tags(html_content)
 
     # Email composition and sending
@@ -87,7 +86,19 @@ def send_verification_email(request, user):
     msg.attach_alternative(html_content, 'text/html')
     msg.send()
 
+# Function to send verification email
+def send_verification_email(request, user):
+    subject = 'Verify your YourDoctorHere Account'
+    template = 'users/emails/email_verification_template.html'
+    send_email(request, user, 'activate', subject, template)
+
 # Function to send email and redirect
 def send_email_and_redirect(request, user, uuid):
     send_verification_email(request, user)
     return redirect("wait_for_activation", uuid)
+
+# Function to send password reset link
+def send_password_reset_email(request, user):
+    subject = 'Reset your password'
+    template = 'users/emails/password_reset_template.html'
+    send_email(request, user, 'reset-password', subject, template)
