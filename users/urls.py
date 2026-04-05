@@ -21,6 +21,12 @@ urlpatterns = [
     path('patients/edit/', views.profile_edit_view, name="patient_profile_edit"),
     path('patients/delete/', views.profile_delete_view, name="patient_profile_delete"),
     path('patients/change-password/', views.change_password_view, name="patients_change_password"),
+
+    # API endpoint
+    path('api/login/', views.login_api_view, name='login_api'),
+    path('api/profile/me/', views.my_profile_api_view, name='my_profile_api'),
+    path('api/profile/me/history/', views.my_history_api_view, name='my_history_api'),
+    path('api/doctors/', views.doctors_api_view, name='doctors_api'),
 ]
 
 """path('doctor_validation/', None, name=""),

@@ -16,10 +16,18 @@ from .utils import (
     get_profile_of_user_or_404,
     send_password_reset_email,
 )
-from django.contrib.auth import login, logout, update_session_auth_hash
+from django.contrib.auth import login, logout, update_session_auth_hash, authenticate
 from django.contrib.auth.decorators import login_required
 from .models import Patient, Doctor
 from medical.models import PatientHistory
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
+from rest_framework import status
+
+from .serializers import *
 
 # Create your views here.
 def home(request):
@@ -156,19 +164,19 @@ def reset_password_view(request, uidb64, token):
         return redirect('forgot_password')
 
 def password_reset_confirm(request, user):
-    # 'user' is the object you found via the token
+    # 'user' is the object found via the token
     if request.method == 'POST':
-        # 1. Use SetPasswordForm (not PasswordChangeForm)
+        # Use SetPasswordForm (not PasswordChangeForm)
         form = SetPasswordForm(user, request.POST)
         
         if form.is_valid():
-            # 2. Save the new password
+            # Save the new password
             form.save()
             
             messages.success(request, "Your password has been set. You are now logged in.")
             return redirect('login') 
     else:
-        # 4. Initialize the form for the GET request
+        # Initialize the form for the GET request
         form = SetPasswordForm(user)
         
     return render(request, 'users/password_reset/password_reset_confirm.html', {'form': form})
@@ -209,14 +217,14 @@ def profile_edit_view(request):
             edit_form.save()
             if entity == entities.PATIENT:
                 return redirect('patient_profile', profile.uuid)
-            if entity == entities.DOCTOR:
+            elif entity == entities.DOCTOR:
                 return redirect('doctor_profile', profile.uuid)
             else:
                 pass
     else:
         if entity == entities.PATIENT:
             edit_form = PatientForm(instance=profile)
-        if entity == entities.DOCTOR:
+        elif entity == entities.DOCTOR:
             edit_form = DoctorForm(instance=profile)
         else:
             pass
@@ -252,9 +260,9 @@ def change_password_view(request):
             update_session_auth_hash(request, user)
             
             messages.success(request, 'Your password was successfully updated!')
-            if profile.entity == entities.PATIENT:
+            if user.entity == entities.PATIENT:
                 return redirect('patient_profile', profile.uuid)
-            if profile.entity == entities.DOCTOR:
+            elif user.entity == entities.DOCTOR:
                 return redirect('doctor_profile', profile.uuid)
             else:
                 pass
@@ -264,3 +272,69 @@ def change_password_view(request):
         form = PasswordChangeForm(request.user)
         
     return render(request, 'users/change_password.html', {'form': form})
+
+# Login API
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login_api_view(request):
+    input_serializer = LoginSerializer(data=request.data)
+
+    # Checking the validity of email and password
+    if not input_serializer.is_valid():
+        return Response(
+            input_serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    
+    # Retreiving email and password from request's body
+    email = request.data.get('email')
+    password = request.data.get('password')
+
+    # Authentication of the user
+    user = authenticate(username=email, password=password)
+    if user is not None:
+        # If the user is authenticated, created a token and return it
+        token, _ = Token.objects.get_or_create(user=user)
+        return Response(
+            {"token": token.key,},
+            status=status.HTTP_200_OK,
+        )
+    else:
+        return Response(
+            {"error": "Invalid email or password"},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+    
+# Profile API
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def my_profile_api_view(request):
+    user = request.user
+    profile = get_profile_of_user_or_404(user)
+
+    if user.entity == entities.PATIENT:
+        serializer = PatientSerializer(profile, context={'request': request})
+    elif user.entity == entities.DOCTOR:
+        serializer = DoctorSerializer(profile, context={'request': request})
+    else:
+        pass
+    return Response(serializer.data)
+
+# History API
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def my_history_api_view(request):
+    user = request.user
+    profile = get_object_or_404(PatientHistory, patient=user.patient)
+
+    serializer = PatientHistorySerializer(profile, context={'request': request})
+    return Response(serializer.data)
+
+# Doctors API
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def doctors_api_view(request):
+    doctors = Doctor.objects.all()
+
+    serializer = DoctorSerializer(doctors, context={'request': request}, many=True)
+    return Response(serializer.data)
