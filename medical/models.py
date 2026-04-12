@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 import uuid
@@ -27,9 +28,27 @@ class WeeklySlot(models.Model):
         return f"Dr.{self.doctor.last_name} — {self.get_day_of_week_display()} {self.start_time}"
 
 
+class BlockedDate(models.Model):
+    doctor = models.ForeignKey(
+        'users.Doctor',
+        on_delete=models.CASCADE,
+        related_name='blocked_dates'
+    )
+    date = models.DateField()
+    reason = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        unique_together = ('doctor', 'date')
+        ordering = ['date']
+
+    def __str__(self):
+        return f"{self.doctor} unavailable on {self.date}"
+
+
 class Appointment(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     STATUS_CHOICES = [
+        ('requested', 'Requested'),
         ('confirmed', 'Confirmed'),
         ('completed', 'Completed'),
         ('cancelled', 'Cancelled'),
@@ -51,15 +70,20 @@ class Appointment(models.Model):
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default='confirmed' # i confirm immediately after booking, the doctor can later change it to completed or cancelled;
+        default='requested'
     )
     reason = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        # Core business rule: a doctor can't have two bookings at same time
-        unique_together = ('doctor', 'date', 'time_slot')
         ordering = ['-date', '-time_slot']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['doctor', 'date', 'time_slot'],
+                condition=~Q(status='cancelled'),
+                name='unique_active_appointment_per_doctor_slot',
+            ),
+        ]
 
     def __str__(self):
         return f"{self.patient} → Dr.{self.doctor.last_name} | {self.date} {self.time_slot} [{self.status}]"

@@ -9,6 +9,13 @@
 <p>Status: {{ appointment.get_status_display }}</p>
 <p>Reason: {{ appointment.reason|default:'No reason provided.' }}</p>
 
+{% if can_confirm %}
+<form method="post" action="{% url 'confirm_appointment' appointment_uuid=appointment.uuid %}">
+    {% csrf_token %}
+    <button type="submit">Confirm Appointment</button>
+</form>
+{% endif %}
+
 {% if can_complete %}
 <form method="post" action="{% url 'complete_appointment' appointment_uuid=appointment.uuid %}">
     {% csrf_token %}

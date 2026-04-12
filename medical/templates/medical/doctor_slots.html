@@ -3,6 +3,13 @@
 {% block content %}
 <h1>Weekly Slots for {{ doctor }}</h1>
 
+{% if blocked_dates %}
+<h2>Unavailable Dates</h2>
+{% for blocked_date in blocked_dates %}
+<p>{{ blocked_date.date }}{% if blocked_date.reason %} - {{ blocked_date.reason }}{% endif %}</p>
+{% endfor %}
+{% endif %}
+
 {% if slots %}
     {% for slot in slots %}
     <div>

@@ -1,6 +1,8 @@
+from datetime import date
+
 from django import forms
 
-from .models import MedicalNote, WeeklySlot
+from .models import BlockedDate, MedicalNote, WeeklySlot
 
 
 class WeeklySlotForm(forms.ModelForm):
@@ -23,3 +25,18 @@ class MedicalNoteForm(forms.ModelForm):
     class Meta:
         model = MedicalNote
         fields = ['diagnosis', 'prescription']
+
+
+class BlockedDateForm(forms.ModelForm):
+    class Meta:
+        model = BlockedDate
+        fields = ['date', 'reason']
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+    def clean_date(self):
+        blocked_date = self.cleaned_data['date']
+        if blocked_date < date.today():
+            raise forms.ValidationError("Blocked dates should be today or later.")
+        return blocked_date
