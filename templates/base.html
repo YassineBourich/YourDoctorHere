@@ -9,6 +9,13 @@
     <header>
         YourDoctorHere
     </header>
+    {% if messages %}
+    <section>
+        {% for message in messages %}
+        <p>{{ message }}</p>
+        {% endfor %}
+    </section>
+    {% endif %}
     {% block content %}{% endblock %}
     <footer>
 

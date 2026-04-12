@@ -7,6 +7,7 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.html import strip_tags
+from django.db import transaction
 
 # Function to get user by uuid
 def get_user_by_uuid(uuid):
@@ -22,16 +23,19 @@ def get_user_by_uuid(uuid):
     return None
 
 # Function to register a user with his profile form
-def register_user_profile(request, user_form, profile_form):
+def register_user_profile(request, user_form, profile_form, entity):
     if user_form.is_valid() and profile_form.is_valid():
-        user = user_form.save(commit=False)
-        user.set_password(user_form.cleaned_data['password'])   # Hash password
-        user.entity = entities.PATIENT
-        user.save()
+        with transaction.atomic():
+            user = user_form.save(commit=False)
+            user.set_password(user_form.cleaned_data['password'])   # Hash password
+            user.entity = entity
+            user.save()
+
+            profile = profile_form.save(commit=False)
+            profile.user = user
+            profile.save()
+
         send_verification_email(request, user)
-        profile = profile_form.save(commit=False)
-        profile.user = user
-        profile.save()
         return profile.uuid, True
 
     return None, False

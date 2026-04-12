@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>My Weekly Slots</h1>
+
+<h2>Add a Slot</h2>
+<form method="post" action="{% url 'add_slot' %}">
+    {% csrf_token %}
+    {{ form.as_div }}
+    <button type="submit">Add Slot</button>
+</form>
+
+<h2>Current Slots</h2>
+{% if slots %}
+    {% for slot in slots %}
+    <div>
+        <p>{{ slot.get_day_of_week_display }}: {{ slot.start_time }} - {{ slot.end_time }}</p>
+        <form method="post" action="{% url 'delete_slot' slot_id=slot.id %}">
+            {% csrf_token %}
+            <button type="submit">Delete</button>
+        </form>
+    </div>
+    {% endfor %}
+{% else %}
+    <p>No weekly slots have been added yet.</p>
+{% endif %}
+{% endblock %}

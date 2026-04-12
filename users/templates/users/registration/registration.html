@@ -4,28 +4,28 @@
 {% block content %}
 <div>
     <div>
-        <button id="patient-btn">Patient</button>
-        <button id="doctor-btn">Doctor</button>
+        <button id="patient-btn" type="button">Patient</button>
+        <button id="doctor-btn" type="button">Doctor</button>
     </div>
     <div>
-        <form method="post">
+        <form method="post" enctype="multipart/form-data" data-entity-form="patient">
             {% csrf_token %}
             <input type="hidden" name="entity" value="{{ PATIENT }}">
             {{ user_form.as_div }}
             {{ patient_profile_form.as_div }}
 
             <div>
-                <input type="submit" value="Sign In">
+                <input type="submit" value="Sign Up as Patient">
             </div>
         </form>
-        <form method="post">
+        <form method="post" enctype="multipart/form-data" data-entity-form="doctor" hidden>
             {% csrf_token %}
             <input type="hidden" name="entity" value="{{ DOCTOR }}">
             {{ user_form.as_div }}
             {{ doctor_profile_form.as_div }}
 
             <div>
-                <input type="submit" value="Sign In">
+                <input type="submit" value="Sign Up as Doctor">
             </div>
         </form>
     </div>

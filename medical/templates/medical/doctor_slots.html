@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Weekly Slots for {{ doctor }}</h1>
+
+{% if slots %}
+    {% for slot in slots %}
+    <div>
+        <p>{{ slot.get_day_of_week_display }}: {{ slot.start_time }} - {{ slot.end_time }}</p>
+        <a href="{% url 'slot_detail' doctor_uuid=doctor.uuid slot_id=slot.id %}">Choose a date</a>
+    </div>
+    {% endfor %}
+{% else %}
+    <p>This doctor has not published weekly slots yet.</p>
+{% endif %}
+{% endblock %}

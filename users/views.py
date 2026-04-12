@@ -30,18 +30,28 @@ def registration_view(request):
         # If ok, wait for email activation
         if entity == entities.PATIENT:
             patient_profile_form = PatientForm(request.POST, request.FILES)
-            uuid, ok = register_user_profile(request, user_form, patient_profile_form)
+            uuid, ok = register_user_profile(
+                request,
+                user_form,
+                patient_profile_form,
+                entities.PATIENT,
+            )
             if ok:
                 return redirect("wait_for_activation", uuid)
             
         elif entity == entities.DOCTOR:
             doctor_profile_form = DoctorForm(request.POST, request.FILES)
-            uuid, ok = register_user_profile(request, user_form, doctor_profile_form)
+            uuid, ok = register_user_profile(
+                request,
+                user_form,
+                doctor_profile_form,
+                entities.DOCTOR,
+            )
             if ok:
                 return redirect("wait_for_activation", uuid)
         
         else:
-            pass
+            messages.error(request, "Please choose a valid account type.")
 
     else:
         # If the method is not POST, create and send empty form

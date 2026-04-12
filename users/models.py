@@ -64,8 +64,8 @@ class BaseProfile(models.Model):
 
     @property
     def avatar_url(self):
-        if self.avatar and hasattr(self.avatar, 'url'):
-            return self.avatar.url
+        if self.avater and hasattr(self.avater, 'url'):
+            return self.avater.url
         return '/static/images/default_avatar.jpg'
 
     class Meta:
@@ -82,6 +82,9 @@ class Patient(BaseProfile):
     birth_date = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=20, choices=Gender.choices, default=None)
 
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}".strip()
+
 class Doctor(BaseProfile):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
@@ -96,6 +99,9 @@ class Doctor(BaseProfile):
     city = models.CharField(max_length=100)
     bio = models.TextField()
     is_verified = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Dr. {self.first_name} {self.last_name}".strip()
 
 
 """

@@ -1,29 +1,31 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from urllib3 import request
-from .models import Appointment, MedicalNote, PatientHistory, WeeklySlot
+from datetime import date, time
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError, transaction
+from django.shortcuts import get_object_or_404, redirect, render
+
+from .forms import MedicalNoteForm, WeeklySlotForm
+from .models import Appointment, PatientHistory, WeeklySlot
+from django.contrib import messages
 from users import entities
 from users.models import Patient, Doctor
-from datetime import date
+
+
+def _current_patient(user):
+    return Patient.objects.filter(user=user).first()
+
+
+def _current_doctor(user):
+    return Doctor.objects.filter(user=user).first()
 
 
 # using login_required to make sure only logged in users can access otherwise you redirct to longin page
 @login_required
 def appointment_detail(request, appointment_uuid):
-    patient = None
-    doctor = None
-
     appointment = get_object_or_404(Appointment, uuid=appointment_uuid)
-    entity = request.user.entity
-
-    if entity == entities.PATIENT:
-        patient = Patient.objects.filter(user = request.user).first()
-        
-    
-    elif entity == entities.DOCTOR:
-        doctor = Doctor.objects.filter(user = request.user).first()
-
+    patient = _current_patient(request.user)
+    doctor = _current_doctor(request.user)
 
     is_the_patient = patient and appointment.patient == patient
     is_the_doctor = doctor and appointment.doctor == doctor
@@ -33,56 +35,48 @@ def appointment_detail(request, appointment_uuid):
         return redirect('home')
 
     note = getattr(appointment, 'note', None)  
-
-    # still have to create the template medical/appointement_detail.html
     return render(request, 'medical/appointment_detail.html', {
         'appointment': appointment, 
         'note': note,
         'is_the_patient': is_the_patient,
         'is_the_doctor': is_the_doctor,
+        'can_complete': is_the_doctor and appointment.status == 'confirmed',
+        'can_cancel': (is_the_patient or is_the_doctor) and appointment.status == 'confirmed',
+        'can_add_note': is_the_doctor and appointment.status == 'completed',
     })
 
 # same logic as confirm_appointment but for completing an appointment
 @login_required
 def complete_appointment(request, appointment_uuid):
     """doctor marks an appointment as completed and can add a medical note"""
-    doctor  = None
-    entity = request.user.entity
-    
-    if entity == entities.DOCTOR:
-        doctor = Doctor.objects.filter(user = request.user).first()
+    if request.method != 'POST':
+        return redirect('appointment_detail', appointment_uuid=appointment_uuid)
 
-    else: 
+    if request.user.entity != entities.DOCTOR:
         messages.error(request, "Only doctors can confirm appointments.")
         return redirect('home')
-    
+
+    doctor = _current_doctor(request.user)
     appointment = get_object_or_404(Appointment, uuid=appointment_uuid, doctor=doctor)
-    
+
     if appointment.status != 'confirmed':
         messages.error(request, "Only confirmed appointments can be completed.")
         return redirect('appointment_detail', appointment_uuid=appointment_uuid)
-    
+
     appointment.status = 'completed'
     appointment.save()
-    messages.success(request, "Appointment marked as completed.")
-    return redirect('appointment_detail', appointment_uuid=appointment_uuid)
+    messages.success(request, "Appointment marked as completed. You can now add the consultation note.")
+    return redirect('add_note', appointment_uuid=appointment_uuid)
 
 @login_required
 def cancel_appointment(request, appointment_uuid):
     """patient or doctor can cancel an appointment"""
+    if request.method != 'POST':
+        return redirect('appointment_detail', appointment_uuid=appointment_uuid)
+
     appointment = get_object_or_404(Appointment, uuid=appointment_uuid)
-
-    patient = None
-    doctor = None
-    entity = request.user.entity
-
-    if entity == entities.PATIENT:
-        patient = Patient.objects.filter(user = request.user).first()
-        
-    
-    elif entity == entities.DOCTOR:
-        doctor = Doctor.objects.filter(user = request.user).first()
-
+    patient = _current_patient(request.user)
+    doctor = _current_doctor(request.user)
 
     is_the_patient = patient and appointment.patient == patient
     is_the_doctor = doctor and appointment.doctor == doctor
@@ -129,8 +123,6 @@ def slot_detail(request, doctor_uuid, slot_id):
     Patient picks a date for a specific weekly slot
     and sees if it's available on that date.
     """
-    from users.models import Doctor
-
     if request.user.entity != entities.PATIENT:
         messages.error(request, "Only patients can view slots.")
         return redirect('home')
@@ -146,19 +138,19 @@ def slot_detail(request, doctor_uuid, slot_id):
     if selected_date_str:
         try:
             selected_date = date.fromisoformat(selected_date_str)
-
-            # check the selected date actually falls on the right day of week
-            if selected_date.weekday() != slot.day_of_week:
+            if selected_date < date.today():
+                messages.error(request, "Please choose a future date.")
+                selected_date = None
+                is_available = None
+            elif selected_date.weekday() != slot.day_of_week:
                 messages.error(request, f"This slot is only available on {slot.get_day_of_week_display()}s.")
                 selected_date = None
                 is_available = None
             else:
-                # check if already booked on that date
                 is_available = not Appointment.objects.filter(
                     doctor=doctor,
                     date=selected_date,
                     time_slot=slot.start_time,
-                    status='confirmed'
                 ).exists()
 
         except ValueError:
@@ -186,63 +178,206 @@ def book_appointment(request, doctor_uuid):
         messages.error(request, "Only patients can book appointments.")
         return redirect('home')
 
-    patient = Patient.objects.filter(user=request.user).first()
+    patient = _current_patient(request.user)
     doctor = get_object_or_404(Doctor, uuid=doctor_uuid)
 
-    if request.method == 'POST':
-        date = request.POST.get('date')
-        time_slot = request.POST.get('time_slot')
-        reason = request.POST.get('reason', '')
+    if request.method != 'POST':
+        return redirect('doctor_slots', doctor_uuid=doctor_uuid)
 
-        # double check the slot isn't already taken
-        # (two patients could try to book the same slot at the same time)
-        already_booked = Appointment.objects.filter(
+    date_str = request.POST.get('date', '').strip()
+    reason = request.POST.get('reason', '').strip()
+    slot_id = request.POST.get('slot_id')
+    time_slot_str = request.POST.get('time_slot', '').strip()
+
+    try:
+        selected_date = date.fromisoformat(date_str)
+    except ValueError:
+        messages.error(request, "Please provide a valid appointment date.")
+        return redirect('doctor_slots', doctor_uuid=doctor_uuid)
+
+    if selected_date < date.today():
+        messages.error(request, "Appointments must be booked for a future date.")
+        return redirect('doctor_slots', doctor_uuid=doctor_uuid)
+
+    slot = None
+    if slot_id:
+        slot = get_object_or_404(
+            WeeklySlot,
+            id=slot_id,
             doctor=doctor,
-            date=date,
-            time_slot=time_slot,
-            status='confirmed'
-        ).exists()
-
-        if already_booked:
-            messages.error(request, "This slot was just taken. Please choose another.")
+            is_active=True,
+        )
+    elif time_slot_str:
+        try:
+            selected_time = time.fromisoformat(time_slot_str)
+        except ValueError:
+            messages.error(request, "Please choose a valid weekly slot.")
             return redirect('doctor_slots', doctor_uuid=doctor_uuid)
 
-        appointment = Appointment.objects.create(
-            patient=patient,
+        slot = WeeklySlot.objects.filter(
             doctor=doctor,
-            date=date,
-            time_slot=time_slot,
-            reason=reason,
-        )
+            day_of_week=selected_date.weekday(),
+            start_time=selected_time,
+            is_active=True,
+        ).first()
 
-        messages.success(request, "Appointment booked successfully.")
-        return redirect('appointment_detail', appointment_uuid=appointment.uuid)
+        if slot is None:
+            messages.error(request, "That time does not match one of the doctor's active weekly slots.")
+            return redirect('doctor_slots', doctor_uuid=doctor_uuid)
+    else:
+        messages.error(request, "Please choose a slot before booking.")
+        return redirect('doctor_slots', doctor_uuid=doctor_uuid)
 
-    # if someone hits this URL without POST, send them back to slots
-    return redirect('doctor_slots', doctor_uuid=doctor_uuid)
+    if selected_date.weekday() != slot.day_of_week:
+        messages.error(request, f"This slot is only available on {slot.get_day_of_week_display()}s.")
+        return redirect('slot_detail', doctor_uuid=doctor_uuid, slot_id=slot.id)
+
+    if Appointment.objects.filter(
+        doctor=doctor,
+        date=selected_date,
+        time_slot=slot.start_time,
+    ).exists():
+        messages.error(request, "This slot is no longer available.")
+        return redirect('slot_detail', doctor_uuid=doctor_uuid, slot_id=slot.id)
+
+    try:
+        with transaction.atomic():
+            appointment = Appointment.objects.create(
+                patient=patient,
+                doctor=doctor,
+                date=selected_date,
+                time_slot=slot.start_time,
+                reason=reason,
+            )
+    except IntegrityError:
+        messages.error(request, "This slot was just taken. Please choose another.")
+        return redirect('slot_detail', doctor_uuid=doctor_uuid, slot_id=slot.id)
+
+    messages.success(request, "Appointment booked successfully.")
+    return redirect('appointment_detail', appointment_uuid=appointment.uuid)
 
 @login_required
 def add_note(request, appointment_uuid):
-    pass
+    if request.user.entity != entities.DOCTOR:
+        messages.error(request, "Only doctors can add consultation notes.")
+        return redirect('home')
+
+    doctor = _current_doctor(request.user)
+    appointment = get_object_or_404(Appointment, uuid=appointment_uuid, doctor=doctor)
+
+    if appointment.status != 'completed':
+        messages.error(request, "You can only add notes to completed appointments.")
+        return redirect('appointment_detail', appointment_uuid=appointment_uuid)
+
+    note = getattr(appointment, 'note', None)
+    form = MedicalNoteForm(request.POST or None, instance=note)
+
+    if request.method == 'POST' and form.is_valid():
+        medical_note = form.save(commit=False)
+        medical_note.appointment = appointment
+        medical_note.save()
+        messages.success(request, "Medical note saved.")
+        return redirect('appointment_detail', appointment_uuid=appointment_uuid)
+
+    return render(request, 'medical/add_note.html', {
+        'appointment': appointment,
+        'form': form,
+        'note': note,
+    })
 
 
 # for a doctor (i may add also provilege for patient)
 @login_required
-def my_history():
-    pass    
+def my_history(request):
+    history_entries = PatientHistory.objects.select_related(
+        'patient',
+        'appointment',
+        'appointment__doctor',
+    )
+
+    if request.user.entity == entities.PATIENT:
+        patient = _current_patient(request.user)
+        history_entries = history_entries.filter(patient=patient)
+    elif request.user.entity == entities.DOCTOR:
+        doctor = _current_doctor(request.user)
+        history_entries = history_entries.filter(appointment__doctor=doctor)
+    else:
+        messages.error(request, "This account cannot access consultation history.")
+        return redirect('home')
+
+    return render(request, 'medical/my_history.html', {
+        'history_entries': history_entries,
+    })
 
 # doctor specific views. i added them to handle adding, deleting a time slot by a Doctor.
 @login_required
-def my_slots():
-    pass
+def my_slots(request):
+    if request.user.entity != entities.DOCTOR:
+        messages.error(request, "Only doctors can manage weekly slots.")
+        return redirect('home')
+
+    doctor = _current_doctor(request.user)
+    slots = WeeklySlot.objects.filter(doctor=doctor).order_by('day_of_week', 'start_time')
+    form = WeeklySlotForm()
+
+    return render(request, 'medical/my_slots.html', {
+        'doctor': doctor,
+        'slots': slots,
+        'form': form,
+    })
 
 @login_required
-def add_slot():
-    pass
+def add_slot(request):
+    if request.user.entity != entities.DOCTOR:
+        messages.error(request, "Only doctors can add weekly slots.")
+        return redirect('home')
+
+    if request.method != 'POST':
+        return redirect('my_slots')
+
+    doctor = _current_doctor(request.user)
+    form = WeeklySlotForm(request.POST)
+
+    if form.is_valid():
+        new_slot = form.save(commit=False)
+        new_slot.doctor = doctor
+
+        overlap_exists = WeeklySlot.objects.filter(
+            doctor=doctor,
+            day_of_week=new_slot.day_of_week,
+        ).filter(
+            start_time__lt=new_slot.end_time,
+            end_time__gt=new_slot.start_time,
+        ).exists()
+
+        if overlap_exists:
+            messages.error(request, "This slot overlaps with an existing weekly slot.")
+        else:
+            new_slot.save()
+            messages.success(request, "Weekly slot added.")
+            return redirect('my_slots')
+
+    slots = WeeklySlot.objects.filter(doctor=doctor).order_by('day_of_week', 'start_time')
+    return render(request, 'medical/my_slots.html', {
+        'doctor': doctor,
+        'slots': slots,
+        'form': form,
+    })
 
 @login_required
-def delete_slot():
-    pass
+def delete_slot(request, slot_id):
+    if request.user.entity != entities.DOCTOR:
+        messages.error(request, "Only doctors can delete weekly slots.")
+        return redirect('home')
+
+    if request.method != 'POST':
+        return redirect('my_slots')
+
+    doctor = _current_doctor(request.user)
+    slot = get_object_or_404(WeeklySlot, id=slot_id, doctor=doctor)
+    slot.delete()
+    messages.success(request, "Weekly slot deleted.")
+    return redirect('my_slots')
 
 
 
