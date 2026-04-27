@@ -1,10 +1,5 @@
-<<<<<<< HEAD
 from datetime import date, time
-
-=======
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Appointment, MedicalNote, PatientHistory, WeeklySlot
->>>>>>> origin/main
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
