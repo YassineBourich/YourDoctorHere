@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Consultation History</h1>
+
+{% if history_entries %}
+    {% for entry in history_entries %}
+    <div>
+        <p>{{ entry.at|date:'Y-m-d H:i' }}</p>
+        <p>Patient: {{ entry.patient }}</p>
+        <p>Doctor: {{ entry.appointment.doctor }}</p>
+        <p>Date: {{ entry.appointment.date }} at {{ entry.appointment.time_slot }}</p>
+        <p>Status: {{ entry.appointment.get_status_display }}</p>
+        {% if entry.appointment.note %}
+        <p>Diagnosis: {{ entry.appointment.note.diagnosis }}</p>
+        <p>Prescription: {{ entry.appointment.note.prescription|default:'No prescription provided.' }}</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+{% else %}
+    <p>No consultation history is available yet.</p>
+{% endif %}
+{% endblock %}

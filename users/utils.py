@@ -7,8 +7,12 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.html import strip_tags
+<<<<<<< HEAD
+from django.db import transaction
+=======
 from django.shortcuts import redirect
 from django.http import Http404
+>>>>>>> origin/main
 
 # Function to get user by uuid
 def get_user_by_uuid_or_404(uuid):
@@ -49,14 +53,24 @@ def get_profile_of_user_or_404(user):
 # Function to register a user with his profile form
 def register_user_profile(request, user_form, profile_form, entity):
     if user_form.is_valid() and profile_form.is_valid():
+<<<<<<< HEAD
+        with transaction.atomic():
+            user = user_form.save(commit=False)
+            user.set_password(user_form.cleaned_data['password'])   # Hash password
+            user.entity = entity
+            user.save()
+
+            profile = profile_form.save(commit=False)
+            profile.user = user
+            profile.save()
+
+=======
         user = user_form.save(commit=False)
         user.set_password(user_form.cleaned_data['password'])   # Hash password
         user.entity = entity
         user.save()
+>>>>>>> origin/main
         send_verification_email(request, user)
-        profile = profile_form.save(commit=False)
-        profile.user = user
-        profile.save()
         return profile.uuid, True
 
     return None, False
@@ -85,6 +99,8 @@ def send_email(request, user, URI, subject, template):
     msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
     msg.attach_alternative(html_content, 'text/html')
     msg.send()
+<<<<<<< HEAD
+=======
 
 # Function to send verification email
 def send_verification_email(request, user):
@@ -102,3 +118,4 @@ def send_password_reset_email(request, user):
     subject = 'Reset your password'
     template = 'users/emails/password_reset_template.html'
     send_email(request, user, 'reset-password', subject, template)
+>>>>>>> origin/main

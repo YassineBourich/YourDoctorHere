@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Find a Doctor</h1>
+
+<form method="get">
+    {{ form.as_div }}
+    <button type="submit">Search</button>
+</form>
+
+{% if doctors %}
+    {% for doctor in doctors %}
+    <div>
+        <h2>{{ doctor }}</h2>
+        <p>Specialty: {{ doctor.specialty|default:'Not specified' }}</p>
+        <p>City: {{ doctor.city }}</p>
+        <p>Consultation Fee: {{ doctor.consultation_fee }}</p>
+        <p>Available slots{% if form.cleaned_data.date %} on {{ form.cleaned_data.date }}{% endif %}: {{ doctor.available_slots_count }}</p>
+        <p><a href="{% url 'medical_doctor_detail' doctor_uuid=doctor.uuid %}">View details</a></p>
+        <p><a href="{% url 'doctor_slots' doctor_uuid=doctor.uuid %}">View slots</a></p>
+    </div>
+    {% endfor %}
+{% else %}
+    <p>No doctors match the current filters.</p>
+{% endif %}
+{% endblock %}

@@ -23,6 +23,8 @@ class DoctorForm(forms.ModelForm):
     class Meta:
         model = Doctor
         exclude = ['user', 'is_verified']
+<<<<<<< HEAD
+=======
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -30,3 +32,4 @@ class DoctorForm(forms.ModelForm):
         if self.instance and self.instance.pk:
             self.fields['first_name'].disabled = True
             self.fields['last_name'].disabled = True
+>>>>>>> origin/main

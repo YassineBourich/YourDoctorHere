@@ -1,24 +1,21 @@
-const patient_btn = document.querySelector("#patient-btn"),
-doctor_btn = document.querySelector("#doctor-btn"),
-hospital_btn = document.querySelector("#hospital-btn");
+const patientBtn = document.querySelector("#patient-btn");
+const doctorBtn = document.querySelector("#doctor-btn");
+const patientForm = document.querySelector('[data-entity-form="patient"]');
+const doctorForm = document.querySelector('[data-entity-form="doctor"]');
 
-const PATIENT = "PATIENT",
-DOCTOR = "DOCTOR",
-HOSPITAL = "HOSPITAL";
+function switchEntity(entityType) {
+    if (!patientForm || !doctorForm) {
+        return;
+    }
 
-function switch_entity(event, entity_type) {
-    event.preventDefault();
-    console.log("fiuvgdskfvg");
+    patientForm.hidden = entityType !== "patient";
+    doctorForm.hidden = entityType !== "doctor";
 }
 
-patient_btn.onclick = (e) => {
-    switch_entity(e, PATIENT);
+if (patientBtn) {
+    patientBtn.onclick = () => switchEntity("patient");
 }
 
-doctor_btn.onclick = (e) => {
-    switch_entity(e, DOCTOR);
-}
-
-hospital_btn.onclick = (e) => {
-    switch_entity(e, HOSPITAL);
+if (doctorBtn) {
+    doctorBtn.onclick = () => switchEntity("doctor");
 }

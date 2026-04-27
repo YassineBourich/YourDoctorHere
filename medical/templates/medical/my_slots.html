@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>My Weekly Slots</h1>
+
+<h2>Add a Slot</h2>
+<form method="post" action="{% url 'add_slot' %}">
+    {% csrf_token %}
+    {{ form.as_div }}
+    <button type="submit">Add Slot</button>
+</form>
+
+<h2>Current Slots</h2>
+{% if slots %}
+    {% for slot in slots %}
+    <div>
+        <p>{{ slot.get_day_of_week_display }}: {{ slot.start_time }} - {{ slot.end_time }}</p>
+        <form method="post" action="{% url 'delete_slot' slot_id=slot.id %}">
+            {% csrf_token %}
+            <button type="submit">Delete</button>
+        </form>
+    </div>
+    {% endfor %}
+{% else %}
+    <p>No weekly slots have been added yet.</p>
+{% endif %}
+
+<h2>Blocked Dates</h2>
+<form method="post" action="{% url 'add_blocked_date' %}">
+    {% csrf_token %}
+    {{ blocked_date_form.as_div }}
+    <button type="submit">Add Blocked Date</button>
+</form>
+
+{% if blocked_dates %}
+    {% for blocked_date in blocked_dates %}
+    <div>
+        <p>{{ blocked_date.date }}{% if blocked_date.reason %} - {{ blocked_date.reason }}{% endif %}</p>
+        <form method="post" action="{% url 'delete_blocked_date' blocked_date_id=blocked_date.id %}">
+            {% csrf_token %}
+            <button type="submit">Remove</button>
+        </form>
+    </div>
+    {% endfor %}
+{% else %}
+    <p>No blocked dates have been added.</p>
+{% endif %}
+{% endblock %}

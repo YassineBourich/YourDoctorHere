@@ -48,18 +48,36 @@ def registration_view(request):
         # If ok, wait for email activation
         if entity == entities.PATIENT:
             patient_profile_form = PatientForm(request.POST, request.FILES)
+<<<<<<< HEAD
+            uuid, ok = register_user_profile(
+                request,
+                user_form,
+                patient_profile_form,
+                entities.PATIENT,
+            )
+=======
             uuid, ok = register_user_profile(request, user_form, patient_profile_form, entity)
+>>>>>>> origin/main
             if ok:
                 return redirect("wait_for_activation", uuid)
             
         elif entity == entities.DOCTOR:
             doctor_profile_form = DoctorForm(request.POST, request.FILES)
+<<<<<<< HEAD
+            uuid, ok = register_user_profile(
+                request,
+                user_form,
+                doctor_profile_form,
+                entities.DOCTOR,
+            )
+=======
             uuid, ok = register_user_profile(request, user_form, doctor_profile_form, entity)
+>>>>>>> origin/main
             if ok:
                 return redirect("wait_for_activation", uuid)
         
         else:
-            pass
+            messages.error(request, "Please choose a valid account type.")
 
     else:
         # If the method is not POST, create and send empty form
@@ -192,6 +210,10 @@ def patient_profile_view(request, id):
     return render(request, "users/profiles/profile.html", {'user': user, 'profile': profile, 'history': history, 'is_me': is_me, 'entities': {'PATIENT': entities.PATIENT, 'DOCTOR': entities.DOCTOR}})
 
 @login_required
+<<<<<<< HEAD
+def hospital_profile(request, id):
+    return render(request, "users/profiles/hospital_profile.html", {})
+=======
 def doctor_profile_view(request, id):
     user = get_user_by_uuid_or_404(id)
     profile = get_object_or_404(Doctor, uuid=id)
@@ -338,3 +360,4 @@ def doctors_api_view(request):
 
     serializer = DoctorSerializer(doctors, context={'request': request}, many=True)
     return Response(serializer.data)
+>>>>>>> origin/main

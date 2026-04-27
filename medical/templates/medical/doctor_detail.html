@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>{{ doctor }}</h1>
+<p>Specialty: {{ doctor.specialty|default:'Not specified' }}</p>
+<p>City: {{ doctor.city }}</p>
+<p>Consultation Fee: {{ doctor.consultation_fee }}</p>
+<p>Bio: {{ doctor.bio }}</p>
+
+<h2>Weekly Slots</h2>
+{% if weekly_slots %}
+    {% for slot in weekly_slots %}
+    <p>{{ slot.get_day_of_week_display }}: {{ slot.start_time }} - {{ slot.end_time }}</p>
+    {% endfor %}
+{% else %}
+    <p>No weekly slots published yet.</p>
+{% endif %}
+
+{% if blocked_dates %}
+<h2>Unavailable Dates</h2>
+{% for blocked_date in blocked_dates %}
+<p>{{ blocked_date.date }}{% if blocked_date.reason %} - {{ blocked_date.reason }}{% endif %}</p>
+{% endfor %}
+{% endif %}
+
+<p><a href="{% url 'doctor_slots' doctor_uuid=doctor.uuid %}">Book with this doctor</a></p>
+{% endblock %}

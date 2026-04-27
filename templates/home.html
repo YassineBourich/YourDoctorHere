@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>YourDoctorHere</h1>
+<p>Telemedicine appointment scheduling for patients and doctors.</p>
+
+{% if user.is_authenticated %}
+    <p>You are logged in as {{ user.email }}.</p>
+
+    {% if user.entity == 'Patient' %}
+        <h2>Patient Area</h2>
+        <p><a href="{% url 'medical_doctor_directory' %}">Find a doctor</a></p>
+        <p><a href="{% url 'my_appointments' %}">My appointments</a></p>
+        <p><a href="{% url 'my_history' %}">My consultation history</a></p>
+    {% elif user.entity == 'Doctor' %}
+        <h2>Doctor Area</h2>
+        <p><a href="{% url 'my_appointments' %}">My appointments</a></p>
+        <p><a href="{% url 'my_slots' %}">Manage weekly slots</a></p>
+        <p><a href="{% url 'my_history' %}">Consultation history</a></p>
+    {% endif %}
+{% else %}
+    <p><a href="{% url 'login' %}">Log in</a></p>
+    <p><a href="{% url 'registration' %}">Create an account</a></p>
+{% endif %}
+{% endblock %}

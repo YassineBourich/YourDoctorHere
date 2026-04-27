@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Appointment Details</h1>
+<p>Doctor: {{ appointment.doctor }}</p>
+<p>Patient: {{ appointment.patient }}</p>
+<p>Date: {{ appointment.date }}</p>
+<p>Time: {{ appointment.time_slot }}</p>
+<p>Status: {{ appointment.get_status_display }}</p>
+<p>Reason: {{ appointment.reason|default:'No reason provided.' }}</p>
+
+{% if can_confirm %}
+<form method="post" action="{% url 'confirm_appointment' appointment_uuid=appointment.uuid %}">
+    {% csrf_token %}
+    <button type="submit">Confirm Appointment</button>
+</form>
+{% endif %}
+
+{% if can_complete %}
+<form method="post" action="{% url 'complete_appointment' appointment_uuid=appointment.uuid %}">
+    {% csrf_token %}
+    <button type="submit">Mark as Completed</button>
+</form>
+{% endif %}
+
+{% if can_cancel %}
+<form method="post" action="{% url 'cancel_appointment' appointment_uuid=appointment.uuid %}">
+    {% csrf_token %}
+    <button type="submit">Cancel Appointment</button>
+</form>
+{% endif %}
+
+{% if can_add_note %}
+<p><a href="{% url 'add_note' appointment_uuid=appointment.uuid %}">Add or edit medical note</a></p>
+{% endif %}
+
+<h2>Medical Note</h2>
+{% if note %}
+    <p>Diagnosis: {{ note.diagnosis }}</p>
+    <p>Prescription: {{ note.prescription|default:'No prescription provided.' }}</p>
+{% else %}
+    <p>No medical note has been added yet.</p>
+{% endif %}
+{% endblock %}
