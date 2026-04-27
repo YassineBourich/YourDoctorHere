@@ -1,27 +1,91 @@
 {% extends 'base.html' %}
 
+{% block DocumentTitle %}{{ doctor }} - YourDoctorHere{% endblock %}
+
 {% block content %}
-<h1>{{ doctor }}</h1>
-<p>Specialty: {{ doctor.specialty|default:'Not specified' }}</p>
-<p>City: {{ doctor.city }}</p>
-<p>Consultation Fee: {{ doctor.consultation_fee }}</p>
-<p>Bio: {{ doctor.bio }}</p>
+<div style="margin-bottom: 2rem;">
+    <p><a href="{% url 'medical_doctor_directory' %}" class="btn btn-secondary btn-sm" style="padding: 5px 10px; font-size: 0.9rem;">
+        <span class="material-icons" style="font-size: 1rem;">arrow_back</span> Back to Directory
+    </a></p>
+</div>
 
-<h2>Weekly Slots</h2>
-{% if weekly_slots %}
-    {% for slot in weekly_slots %}
-    <p>{{ slot.get_day_of_week_display }}: {{ slot.start_time }} - {{ slot.end_time }}</p>
-    {% endfor %}
-{% else %}
-    <p>No weekly slots published yet.</p>
-{% endif %}
+<div class="card" style="display: flex; gap: 30px; align-items: flex-start; margin-bottom: 30px; flex-wrap: wrap;">
+    <div style="width: 150px; height: 150px; border-radius: 50%; overflow: hidden; background-color: #eee; flex-shrink: 0; box-shadow: var(--shadow-elevation-2);">
+        {% if doctor.avatar %}
+            <img src="{{ doctor.avatar_url }}" alt="{{ doctor }}" style="width: 100%; height: 100%; object-fit: cover;">
+        {% else %}
+            <span class="material-icons" style="font-size: 6rem; color: #ccc; display: flex; justify-content: center; align-items: center; height: 100%;">person</span>
+        {% endif %}
+    </div>
+    
+    <div style="flex-grow: 1;">
+        <h1 style="color: var(--primary-blue); margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+            {{ doctor }}
+            {% if doctor.is_verified %}
+            <span class="material-icons" style="color: var(--success-color);" title="Verified Professional">verified</span>
+            {% endif %}
+        </h1>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+            <p style="margin: 0; font-size: 1.1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                <span class="material-icons" style="color: var(--primary-blue);">medical_services</span> {{ doctor.specialty|default:'General Practitioner' }}
+            </p>
+            <p style="margin: 0; font-size: 1.1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                <span class="material-icons" style="color: var(--primary-blue);">location_on</span> {{ doctor.city }}
+            </p>
+            <p style="margin: 0; font-size: 1.1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                <span class="material-icons" style="color: var(--primary-blue);">payments</span> ${{ doctor.consultation_fee }} / consultation
+            </p>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <h3 style="margin-bottom: 10px; font-size: 1.1rem;">About Dr. {{ doctor.last_name }}</h3>
+            <p style="color: var(--text-secondary); line-height: 1.6;">{{ doctor.bio|default:'No biography provided.' }}</p>
+        </div>
+        
+        <div>
+            <a href="{% url 'doctor_slots' doctor_uuid=doctor.uuid %}" class="btn btn-primary" style="padding: 12px 25px; font-size: 1.1rem;">
+                <span class="material-icons">event</span> Book an Appointment
+            </a>
+        </div>
+    </div>
+</div>
 
-{% if blocked_dates %}
-<h2>Unavailable Dates</h2>
-{% for blocked_date in blocked_dates %}
-<p>{{ blocked_date.date }}{% if blocked_date.reason %} - {{ blocked_date.reason }}{% endif %}</p>
-{% endfor %}
-{% endif %}
+<div style="display: flex; gap: 30px; flex-wrap: wrap;">
+    <div style="flex: 2; min-width: 300px;">
+        <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">Weekly Schedule</h2>
+        {% if weekly_slots %}
+            <div class="grid-cards" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+            {% for slot in weekly_slots %}
+                <div class="card" style="text-align: center; padding: 15px; margin-bottom: 0;">
+                    <p style="font-weight: bold; color: var(--primary-blue); margin-bottom: 5px; font-size: 1.1rem;">{{ slot.get_day_of_week_display }}</p>
+                    <p style="color: var(--text-secondary); margin: 0; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                        <span class="material-icons" style="font-size: 1rem;">schedule</span> {{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}
+                    </p>
+                </div>
+            {% endfor %}
+            </div>
+        {% else %}
+            <p style="color: var(--text-secondary); font-style: italic;">No weekly slots published yet.</p>
+        {% endif %}
+    </div>
 
-<p><a href="{% url 'doctor_slots' doctor_uuid=doctor.uuid %}">Book with this doctor</a></p>
+    {% if blocked_dates %}
+    <div style="flex: 1; min-width: 250px;">
+        <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">Unavailable Dates</h2>
+        <div class="card" style="background-color: #FFF3E0; border-left: 4px solid var(--warning-color);">
+            <ul style="list-style-type: none; padding-left: 0; margin-bottom: 0;">
+            {% for blocked_date in blocked_dates %}
+                <li style="padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.05); color: var(--text-secondary);">
+                    <strong>{{ blocked_date.date }}</strong>
+                    {% if blocked_date.reason %}
+                        <br><span style="font-size: 0.9em;">{{ blocked_date.reason }}</span>
+                    {% endif %}
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+</div>
 {% endblock %}

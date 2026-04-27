@@ -1,38 +1,100 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block DocumentTitle %}Register - YourDoctorHere{% endblock %}
+
 {% block content %}
-<div>
-    <div>
-        <button id="patient-btn" type="button">Patient</button>
-        <button id="doctor-btn" type="button">Doctor</button>
-    </div>
-    <div>
-        <form method="post" enctype="multipart/form-data" data-entity-form="patient">
-            {% csrf_token %}
-            <input type="hidden" name="entity" value="{{ PATIENT }}">
-            {{ user_form.as_div }}
-            {{ patient_profile_form.as_div }}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 80vh; padding: 40px 0;">
+    <div class="card" style="width: 100%; max-width: 600px; padding: 2rem;">
+        <h2 style="text-align: center; color: var(--primary-blue); margin-bottom: 1.5rem;">
+            <span class="material-icons" style="vertical-align: middle; font-size: 2rem;">person_add</span><br>
+            Create an Account
+        </h2>
 
-            <div>
-                <input type="submit" value="Sign Up as Patient">
-            </div>
-        </form>
-        <form method="post" enctype="multipart/form-data" data-entity-form="doctor" hidden>
-            {% csrf_token %}
-            <input type="hidden" name="entity" value="{{ DOCTOR }}">
-            {{ user_form.as_div }}
-            {{ doctor_profile_form.as_div }}
+        <!-- Custom Role Selection Tabs -->
+        <div style="display: flex; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0;">
+            <button id="patient-btn" type="button" style="flex: 1; padding: 12px; background: none; border: none; border-bottom: 3px solid var(--primary-blue); color: var(--primary-blue); font-weight: bold; cursor: pointer; font-size: 1.1rem; transition: all 0.3s;">
+                <span class="material-icons" style="vertical-align: middle;">person</span> Patient
+            </button>
+            <button id="doctor-btn" type="button" style="flex: 1; padding: 12px; background: none; border: none; border-bottom: 3px solid transparent; color: var(--text-secondary); font-weight: bold; cursor: pointer; font-size: 1.1rem; transition: all 0.3s;">
+                <span class="material-icons" style="vertical-align: middle;">medical_services</span> Doctor
+            </button>
+        </div>
 
-            <div>
-                <input type="submit" value="Sign Up as Doctor">
-            </div>
-        </form>
+        <div>
+            <!-- Patient Registration Form -->
+            <form method="post" enctype="multipart/form-data" data-entity-form="patient">
+                {% csrf_token %}
+                <input type="hidden" name="entity" value="{{ PATIENT }}">
+                <div style="margin-bottom: 20px;">
+                    <h3 style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Account Details</h3>
+                    {{ user_form.as_div }}
+                    
+                    <h3 style="margin-top: 20px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Profile Details</h3>
+                    {{ patient_profile_form.as_div }}
+                </div>
+
+                <div style="margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
+                        Sign Up as Patient
+                    </button>
+                </div>
+            </form>
+
+            <!-- Doctor Registration Form -->
+            <form method="post" enctype="multipart/form-data" data-entity-form="doctor" hidden>
+                {% csrf_token %}
+                <input type="hidden" name="entity" value="{{ DOCTOR }}">
+                <div style="margin-bottom: 20px;">
+                    <h3 style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Account Details</h3>
+                    {{ user_form.as_div }}
+                    
+                    <h3 style="margin-top: 20px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Professional Details</h3>
+                    {{ doctor_profile_form.as_div }}
+                </div>
+
+                <div style="margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-accent" style="width: 100%; justify-content: center;">
+                        Sign Up as Doctor
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+            Already have an account? <a href="{% url 'login' %}">Log in here</a>
+        </div>
     </div>
 </div>
 {% endblock %}
 
-
 {% block scripts %}
 <script src="{% static 'users/js/registration.js' %}"></script>
+<script>
+    // Overriding the script if it doesn't handle the tab styling properly
+    document.addEventListener('DOMContentLoaded', () => {
+        const patientBtn = document.getElementById('patient-btn');
+        const doctorBtn = document.getElementById('doctor-btn');
+        const patientForm = document.querySelector('form[data-entity-form="patient"]');
+        const doctorForm = document.querySelector('form[data-entity-form="doctor"]');
+
+        patientBtn.addEventListener('click', () => {
+            patientForm.hidden = false;
+            doctorForm.hidden = true;
+            patientBtn.style.borderBottomColor = 'var(--primary-blue)';
+            patientBtn.style.color = 'var(--primary-blue)';
+            doctorBtn.style.borderBottomColor = 'transparent';
+            doctorBtn.style.color = 'var(--text-secondary)';
+        });
+
+        doctorBtn.addEventListener('click', () => {
+            patientForm.hidden = true;
+            doctorForm.hidden = false;
+            doctorBtn.style.borderBottomColor = 'var(--primary-blue)';
+            doctorBtn.style.color = 'var(--primary-blue)';
+            patientBtn.style.borderBottomColor = 'transparent';
+            patientBtn.style.color = 'var(--text-secondary)';
+        });
+    });
+</script>
 {% endblock %}

@@ -1,25 +1,59 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>YourDoctorHere</h1>
-<p>Telemedicine appointment scheduling for patients and doctors.</p>
+<div style="text-align: center; padding: 40px 0;">
+    <h1 style="color: var(--primary-blue); font-size: 2.5rem; margin-bottom: 10px;">Welcome to YourDoctorHere</h1>
+    <p style="color: var(--text-secondary); font-size: 1.2rem; max-width: 600px; margin: 0 auto 30px auto;">
+        Seamless telemedicine appointment scheduling connecting patients with trusted healthcare professionals.
+    </p>
 
-{% if user.is_authenticated %}
-    <p>You are logged in as {{ user.email }}.</p>
-
-    {% if user.entity == 'Patient' %}
-        <h2>Patient Area</h2>
-        <p><a href="{% url 'medical_doctor_directory' %}">Find a doctor</a></p>
-        <p><a href="{% url 'my_appointments' %}">My appointments</a></p>
-        <p><a href="{% url 'my_history' %}">My consultation history</a></p>
-    {% elif user.entity == 'Doctor' %}
-        <h2>Doctor Area</h2>
-        <p><a href="{% url 'my_appointments' %}">My appointments</a></p>
-        <p><a href="{% url 'my_slots' %}">Manage weekly slots</a></p>
-        <p><a href="{% url 'my_history' %}">Consultation history</a></p>
+    {% if not user.is_authenticated %}
+        <!-- Call to Action for guests -->
+        <div style="display: flex; gap: 20px; justify-content: center;">
+            <a href="{% url 'registration' %}" class="btn btn-primary" style="font-size: 1.1rem; padding: 12px 30px;">
+                <span class="material-icons">person_add</span> Create an Account
+            </a>
+            <a href="{% url 'login' %}" class="btn btn-secondary" style="font-size: 1.1rem; padding: 12px 30px;">
+                <span class="material-icons">login</span> Log In
+            </a>
+        </div>
+    {% else %}
+        <!-- Dashboard overview for logged in users -->
+        <div class="grid-cards" style="margin-top: 40px; text-align: left;">
+            {% if user.entity == 'Patient' %}
+                <div class="card">
+                    <h3 class="card-title"><span class="material-icons" style="vertical-align: middle;">search</span> Find a Doctor</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px;">Search our directory of verified professionals by specialty and city.</p>
+                    <a href="{% url 'medical_doctor_directory' %}" class="btn btn-primary">Search Doctors</a>
+                </div>
+                <div class="card">
+                    <h3 class="card-title"><span class="material-icons" style="vertical-align: middle;">event</span> My Appointments</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px;">Manage your upcoming and past consultations.</p>
+                    <a href="{% url 'my_appointments' %}" class="btn btn-secondary">View Appointments</a>
+                </div>
+                <div class="card">
+                    <h3 class="card-title"><span class="material-icons" style="vertical-align: middle;">history</span> Medical History</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px;">Access your past diagnoses and prescriptions.</p>
+                    <a href="{% url 'my_history' %}" class="btn btn-secondary">View History</a>
+                </div>
+            {% elif user.entity == 'Doctor' %}
+                <div class="card">
+                    <h3 class="card-title"><span class="material-icons" style="vertical-align: middle;">event_available</span> Manage Slots</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px;">Set your weekly availability and block out unavailable dates.</p>
+                    <a href="{% url 'my_slots' %}" class="btn btn-primary">Manage Schedule</a>
+                </div>
+                <div class="card">
+                    <h3 class="card-title"><span class="material-icons" style="vertical-align: middle;">people</span> Appointments</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px;">Review requested appointments and manage your daily consultations.</p>
+                    <a href="{% url 'my_appointments' %}" class="btn btn-secondary">View Appointments</a>
+                </div>
+                <div class="card">
+                    <h3 class="card-title"><span class="material-icons" style="vertical-align: middle;">history</span> Patient History</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px;">Review past consultations and medical notes you've written.</p>
+                    <a href="{% url 'my_history' %}" class="btn btn-secondary">Consultation History</a>
+                </div>
+            {% endif %}
+        </div>
     {% endif %}
-{% else %}
-    <p><a href="{% url 'login' %}">Log in</a></p>
-    <p><a href="{% url 'registration' %}">Create an account</a></p>
-{% endif %}
+</div>
 {% endblock %}

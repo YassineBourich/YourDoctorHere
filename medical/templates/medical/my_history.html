@@ -1,23 +1,69 @@
 {% extends 'base.html' %}
 
+{% block DocumentTitle %}Consultation History - YourDoctorHere{% endblock %}
+
 {% block content %}
-<h1>Consultation History</h1>
+<div style="margin-bottom: 2rem;">
+    <h1 style="color: var(--primary-blue); display: flex; align-items: center; gap: 10px;">
+        <span class="material-icons" style="font-size: 2.5rem;">history</span>
+        Consultation History
+    </h1>
+    <p style="color: var(--text-secondary);">Review your past appointments, diagnoses, and prescriptions.</p>
+</div>
 
 {% if history_entries %}
+    <div style="display: flex; flex-direction: column; gap: 20px; max-width: 800px; margin: 0 auto;">
     {% for entry in history_entries %}
-    <div>
-        <p>{{ entry.at|date:'Y-m-d H:i' }}</p>
-        <p>Patient: {{ entry.patient }}</p>
-        <p>Doctor: {{ entry.appointment.doctor }}</p>
-        <p>Date: {{ entry.appointment.date }} at {{ entry.appointment.time_slot }}</p>
-        <p>Status: {{ entry.appointment.get_status_display }}</p>
-        {% if entry.appointment.note %}
-        <p>Diagnosis: {{ entry.appointment.note.diagnosis }}</p>
-        <p>Prescription: {{ entry.appointment.note.prescription|default:'No prescription provided.' }}</p>
-        {% endif %}
-    </div>
+        <div class="card" style="border-left: 4px solid var(--accent-purple); padding: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                <div>
+                    <h3 style="margin: 0 0 5px 0; color: var(--primary-blue); display: flex; align-items: center; gap: 8px;">
+                        <span class="material-icons" style="font-size: 1.2rem;">event</span> {{ entry.appointment.date }} 
+                        <span style="font-weight: normal; font-size: 1rem; color: var(--text-secondary);">at {{ entry.appointment.time_slot|time:"H:i" }}</span>
+                    </h3>
+                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">
+                        Logged on: {{ entry.at|date:'M d, Y H:i' }}
+                    </p>
+                </div>
+                <span class="badge status-{{ entry.appointment.status }}">{{ entry.appointment.get_status_display }}</span>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; background-color: #f9f9f9; padding: 15px; border-radius: 8px;">
+                <div>
+                    <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary);">Doctor</p>
+                    <p style="margin: 0; font-weight: 500;">Dr. {{ entry.appointment.doctor.last_name }}</p>
+                </div>
+                <div>
+                    <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary);">Patient</p>
+                    <p style="margin: 0; font-weight: 500;">{{ entry.patient }}</p>
+                </div>
+            </div>
+            
+            {% if entry.appointment.note %}
+                <div style="margin-top: 15px;">
+                    <h4 style="margin-bottom: 8px; color: var(--text-primary); font-size: 1rem;">Diagnosis</h4>
+                    <div style="background-color: rgba(142, 36, 170, 0.05); padding: 10px 15px; border-radius: 4px; margin-bottom: 15px;">
+                        {{ entry.appointment.note.diagnosis|linebreaks }}
+                    </div>
+                    
+                    <h4 style="margin-bottom: 8px; color: var(--text-primary); font-size: 1rem;">Prescription</h4>
+                    <div style="background-color: rgba(30, 136, 229, 0.05); padding: 10px 15px; border-radius: 4px;">
+                        {{ entry.appointment.note.prescription|default:'<em style="color: #999;">No prescription provided.</em>'|linebreaks }}
+                    </div>
+                </div>
+            {% else %}
+                <div style="margin-top: 15px; padding: 10px; text-align: center; background-color: #f5f5f5; border-radius: 4px; color: var(--text-secondary);">
+                    <span class="material-icons" style="vertical-align: middle; font-size: 1.2rem;">info</span> No medical note associated with this consultation.
+                </div>
+            {% endif %}
+        </div>
     {% endfor %}
+    </div>
 {% else %}
-    <p>No consultation history is available yet.</p>
+    <div class="card" style="text-align: center; padding: 50px 20px; max-width: 600px; margin: 0 auto;">
+        <span class="material-icons" style="font-size: 4rem; color: #ccc; margin-bottom: 15px;">history_edu</span>
+        <h3 style="color: var(--text-secondary);">No consultation history</h3>
+        <p style="color: var(--text-secondary);">You don't have any past consultations logged yet.</p>
+    </div>
 {% endif %}
 {% endblock %}

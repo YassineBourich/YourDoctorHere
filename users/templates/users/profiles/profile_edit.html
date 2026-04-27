@@ -1,22 +1,35 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block DocumentTitle %}Edit Profile - YourDoctorHere{% endblock %}
+
 {% block content %}
-<div>
-    <div>
+<div style="display: flex; justify-content: center; align-items: flex-start; padding: 40px 0;">
+    <div class="card" style="width: 100%; max-width: 600px; padding: 2rem;">
+        <div style="margin-bottom: 20px;">
+            <button onclick="history.back()" class="btn btn-secondary btn-sm" style="padding: 5px 10px; font-size: 0.9rem;">
+                <span class="material-icons" style="font-size: 1rem;">arrow_back</span> Cancel
+            </button>
+        </div>
+        
+        <h2 style="color: var(--primary-blue); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+            <span class="material-icons" style="font-size: 2rem;">manage_accounts</span>
+            Edit Profile
+        </h2>
+
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            {{ edit_form.as_div }}
-
-            <div>
-                <input type="submit" value="Edit">
+            <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
+                {{ edit_form.as_div }}
             </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; font-size: 1.1rem; padding: 12px;">
+                <span class="material-icons">save</span> Save Changes
+            </button>
         </form>
     </div>
 </div>
 {% endblock %}
 
-
 {% block scripts %}
-
 {% endblock %}

@@ -1,23 +1,39 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block DocumentTitle %}Log In - YourDoctorHere{% endblock %}
+
 {% block content %}
-<div>
-    <div>
+<div style="display: flex; justify-content: center; align-items: center; min-height: 70vh;">
+    <div class="card" style="width: 100%; max-width: 400px; padding: 2rem;">
+        <h2 style="text-align: center; color: var(--primary-blue); margin-bottom: 1.5rem;">
+            <span class="material-icons" style="vertical-align: middle; font-size: 2rem;">account_circle</span><br>
+            Welcome Back
+        </h2>
+        
         <form method="post">
             {% csrf_token %}
-            <input type="hidden" name="entity" value="{{ PATIENT }}">
-            {{ user_form.as_div }}
+            <!-- Django's form.as_div will render divs with labels and inputs -->
+            <div style="margin-bottom: 20px;">
+                {{ user_form.as_div }}
+            </div>
 
-            <div>
-                <input type="submit" value="Login">
+            <div style="margin-top: 1.5rem;">
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
+                    Log In
+                </button>
             </div>
         </form>
+
+        <div style="text-align: center; margin-top: 1rem;">
+            <a href="{% url 'forgot_password' %}" style="font-size: 0.9rem;">Forgot password?</a>
+        </div>
+        <div style="text-align: center; margin-top: 1rem; font-size: 0.9rem; color: var(--text-secondary);">
+            Don't have an account? <a href="{% url 'registration' %}">Sign up here</a>
+        </div>
     </div>
 </div>
 {% endblock %}
 
-
 {% block scripts %}
-
 {% endblock %}

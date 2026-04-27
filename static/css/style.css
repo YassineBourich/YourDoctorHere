@@ -1,0 +1,302 @@
+/* Material Design Stylesheet for YourDoctorHere */
+
+/* Variables defining the Material Design palette and settings */
+:root {
+  --primary-blue: #1E88E5;
+  --secondary-blue: #0288D1; /* Skyline */
+  --accent-purple: #8E24AA;
+  --bg-color: #FAFAFA; /* Material White */
+  --text-primary: #212121; /* Black for writing */
+  --text-secondary: #757575;
+  --surface-color: #FFFFFF;
+  --border-radius: 12px; /* Soft, non-sharp corners */
+  --shadow-elevation-1: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+  --shadow-elevation-2: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+  --shadow-elevation-3: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+  --transition-speed: 0.3s;
+  --success-color: #4CAF50;
+  --error-color: #F44336;
+  --info-color: #2196F3;
+  --warning-color: #FF9800;
+}
+
+/* Global Reset and Body Styling */
+body {
+  font-family: 'Roboto', 'Inter', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header Styling */
+.navbar {
+  background-color: var(--primary-blue);
+  color: white;
+  box-shadow: var(--shadow-elevation-2);
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar-brand {
+  color: white;
+  text-decoration: none;
+  font-size: 1.5rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.navbar-nav {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.navbar-nav a {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: var(--border-radius);
+  transition: background-color var(--transition-speed);
+}
+
+.navbar-nav a:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+/* Main Content Area */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  flex-grow: 1;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+  margin-top: 0;
+}
+
+a {
+  color: var(--secondary-blue);
+  text-decoration: none;
+  transition: color var(--transition-speed);
+}
+
+a:hover {
+  color: var(--primary-blue);
+}
+
+/* Material Cards */
+.card {
+  background-color: var(--surface-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-elevation-1);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: box-shadow var(--transition-speed);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-elevation-2);
+}
+
+.card-title {
+  margin-bottom: 1rem;
+  color: var(--primary-blue);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color var(--transition-speed), transform 0.1s, box-shadow var(--transition-speed);
+  box-shadow: var(--shadow-elevation-1);
+  gap: 8px;
+}
+
+.btn:active {
+  transform: translateY(2px);
+  box-shadow: none;
+}
+
+.btn-primary {
+  background-color: var(--primary-blue);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--secondary-blue);
+  color: white;
+}
+
+.btn-secondary {
+  background-color: var(--surface-color);
+  color: var(--primary-blue);
+  border: 1px solid var(--primary-blue);
+  box-shadow: none;
+}
+
+.btn-secondary:hover {
+  background-color: rgba(30, 136, 229, 0.05);
+}
+
+.btn-accent {
+  background-color: var(--accent-purple);
+  color: white;
+}
+
+.btn-accent:hover {
+  background-color: #6a1b9a;
+}
+
+.btn-danger {
+  background-color: var(--error-color);
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #d32f2f;
+}
+
+/* Form Elements */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+select,
+textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: var(--border-radius);
+  font-family: inherit;
+  font-size: 1rem;
+  transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+  box-sizing: border-box;
+  background-color: var(--bg-color);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 2px rgba(30, 136, 229, 0.2);
+  background-color: var(--surface-color);
+}
+
+/* Toast Notifications Container */
+#toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 9999;
+}
+
+/* Individual Toast Styling */
+.toast {
+  min-width: 250px;
+  max-width: 350px;
+  padding: 16px;
+  border-radius: var(--border-radius);
+  color: white;
+  box-shadow: var(--shadow-elevation-3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transform: translateX(120%);
+  animation: slideIn 0.3s forwards;
+  gap: 12px;
+}
+
+.toast.hiding {
+  animation: slideOut 0.3s forwards;
+}
+
+@keyframes slideIn {
+  to { transform: translateX(0); }
+}
+
+@keyframes slideOut {
+  to { transform: translateX(120%); opacity: 0; }
+}
+
+.toast-success { background-color: var(--success-color); }
+.toast-error { background-color: var(--error-color); }
+.toast-warning { background-color: var(--warning-color); }
+.toast-info { background-color: var(--info-color); }
+
+.toast-close {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 1.2rem;
+  opacity: 0.8;
+  padding: 0;
+}
+
+.toast-close:hover { opacity: 1; }
+
+/* Grid System for Lists */
+.grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Status Badges */
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.status-requested { background-color: #E3F2FD; color: #1976D2; }
+.status-confirmed { background-color: #E8F5E9; color: #388E3C; }
+.status-completed { background-color: #F3E5F5; color: #7B1FA2; } /* Purple for completed */
+.status-cancelled { background-color: #FFEBEE; color: #D32F2F; }
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+  margin-top: auto;
+}

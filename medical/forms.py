@@ -3,7 +3,6 @@ from datetime import date
 from django import forms
 
 from .models import BlockedDate, MedicalNote, WeeklySlot
-from users.models import Speciality
 
 
 class WeeklySlotForm(forms.ModelForm):
@@ -44,11 +43,7 @@ class BlockedDateForm(forms.ModelForm):
 
 
 class DoctorSearchForm(forms.Form):
-    specialty = forms.ModelChoiceField(
-        queryset=Speciality.objects.all(),
-        required=False,
-        empty_label='Any specialty',
-    )
+    specialty = forms.CharField(max_length=200, required=False)
     city = forms.CharField(required=False)
     date = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
     min_fee = forms.DecimalField(required=False, min_value=0, decimal_places=2, max_digits=10)

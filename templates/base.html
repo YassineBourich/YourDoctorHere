@@ -1,25 +1,72 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block DocumentTitle %}{% endblock %}</title>
+    <title>{% block DocumentTitle %}YourDoctorHere{% endblock %}</title>
+    <!-- Google Fonts: Roboto -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Google Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <header>
-        YourDoctorHere
+    <!-- Navigation Bar -->
+    <header class="navbar">
+        <a href="{% url 'home' %}" class="navbar-brand">
+            <span class="material-icons">local_hospital</span>
+            YourDoctorHere
+        </a>
+        <nav class="navbar-nav">
+            {% if user.is_authenticated %}
+                <span style="color: rgba(255,255,255,0.7); margin-right: 15px;">
+                    <!-- Displaying the user's email to confirm they are logged in -->
+                    {{ user.email }}
+                </span>
+                {% if user.entity == 'Patient' %}
+                    <a href="{% url 'medical_doctor_directory' %}">Find Doctors</a>
+                    <a href="{% url 'my_appointments' %}">Appointments</a>
+                    <a href="{% url 'my_history' %}">History</a>
+                    <a href="{% url 'patient_profile' user.patient.uuid %}">Profile</a>
+                {% elif user.entity == 'Doctor' %}
+                    <a href="{% url 'my_appointments' %}">Appointments</a>
+                    <a href="{% url 'my_slots' %}">My Slots</a>
+                    <a href="{% url 'my_history' %}">Consultations</a>
+                    <a href="{% url 'doctor_profile' user.doctor.uuid %}">Profile</a>
+                {% endif %}
+                <!-- A logout button could be here but keeping with existing structure where users might logout from profile -->
+            {% else %}
+                <a href="{% url 'login' %}">Login</a>
+                <a href="{% url 'registration' %}">Register</a>
+            {% endif %}
+        </nav>
     </header>
-    {% if messages %}
-    <section>
-        {% for message in messages %}
-        <p>{{ message }}</p>
-        {% endfor %}
-    </section>
-    {% endif %}
-    {% block content %}{% endblock %}
-    <footer>
 
+    <!-- Hidden Django Messages for JS to process -->
+    {% if messages %}
+    <div style="display: none;">
+        {% for message in messages %}
+            <!-- Storing the message tag as a data attribute to determine the toast color (success, error, etc.) -->
+            <div class="django-message-data" data-type="{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content Container -->
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 YourDoctorHere. All rights reserved.</p>
     </footer>
+
+    <!-- Custom JavaScript -->
+    <script src="{% static 'js/main.js' %}"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

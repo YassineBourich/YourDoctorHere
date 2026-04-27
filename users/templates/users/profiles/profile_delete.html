@@ -1,31 +1,43 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block DocumentTitle %}Delete Account - YourDoctorHere{% endblock %}
+
 {% block content %}
-<div>
-    <div>
-        <div>
-            Deleteing your account is irreversible. Do you confirm the deletion?
-            <button>Cancel</button>
-            <button>Yes</button>
+<div style="display: flex; justify-content: center; align-items: flex-start; padding: 40px 0;">
+    <div class="card" style="width: 100%; max-width: 500px; padding: 2rem; border-top: 5px solid var(--danger-color);">
+        <h2 style="color: var(--danger-color); margin-top: 0; display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+            <span class="material-icons" style="font-size: 2rem;">warning</span>
+            Delete Account
+        </h2>
+
+        <div style="background-color: #FFEBEE; border-radius: 8px; padding: 15px; margin-bottom: 25px;">
+            <p style="color: #C62828; margin: 0; font-weight: 500;">
+                Deleting your account is irreversible. All your data, including appointments and history, will be permanently removed.
+            </p>
         </div>
-    </div>
-    <div class="delete-popup">
-        <p>Type your password to confirm deletion</p>
-        <button>X</button>
+
+        <p style="margin-bottom: 20px; color: var(--text-secondary);">Type your password to confirm deletion:</p>
+
         <form method="post">
             {% csrf_token %}
-            <input type="password" name="confirmation_password" id="confirmation_password">
+            <div class="form-group" style="margin-bottom: 25px;">
+                <label for="confirmation_password">Password</label>
+                <input type="password" name="confirmation_password" id="confirmation_password" required>
+            </div>
 
-            <div>
-                <input type="submit" value="Delete">
+            <div style="display: flex; gap: 15px;">
+                <button type="button" onclick="history.back()" class="btn btn-secondary" style="flex: 1; justify-content: center;">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-danger" style="flex: 1; justify-content: center;">
+                    <span class="material-icons">delete_forever</span> Confirm Delete
+                </button>
             </div>
         </form>
     </div>
 </div>
 {% endblock %}
 
-
 {% block scripts %}
-
 {% endblock %}

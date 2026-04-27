@@ -1,60 +1,141 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block DocumentTitle %}Profile - YourDoctorHere{% endblock %}
+
 {% block content %}
-<div>
-    <div>
+<div style="margin-bottom: 2rem;">
+    <h1 style="color: var(--primary-blue); display: flex; align-items: center; gap: 10px;">
+        <span class="material-icons" style="font-size: 2.5rem;">account_circle</span>
+        User Profile
+    </h1>
+</div>
+
+<div style="display: flex; gap: 30px; flex-wrap: wrap; align-items: flex-start;">
+    <!-- Profile Card -->
+    <div class="card" style="flex: 2; min-width: 300px; display: flex; flex-direction: column; gap: 20px;">
+        
+        <!-- Hidden inputs for profile.js routing -->
         {% if user.entity == entities.PATIENT %}
             <input type="hidden" id="extention" value="patients">
         {% endif %}
         {% if user.entity == entities.DOCTOR %}
             <input type="hidden" id="extention" value="doctors">
         {% endif %}
-        <div class="profile_avatar">
-            <img src="{{ profile.avatar_url }}" alt="">
-        </div>
-        <div>
-            <h2>{{ profile.first_name }} {{profile.last_name | upper }}</h2>
-            <p>{{ user.email }}</p>
-            <p>{{ user.entity }}</p>
-        </div>
-        {% if user.entity == entities.DOCTOR %}
-            <div>
-                {{ profile.is_verified }}
-            </div>
-        {% endif %}
-    </div>
-    {% if is_me %}
-    <div>
-        <button id="prof_edit_btn">Edit profile</button>
-        <button id="pass_change_btn">Change Password</button>
-        <button id="acc_del_btn">Delete Account</button>
-    </div>
-    {% endif %}
-    <div>
-        <div>Nationality: {{ profile.Nationality }}</div>
-        <div>Tel: {{ profile.tel }}</div>
-        <div>Address: {{ profile.address }}</div>
-        {% if user.entity == entities.PATIENT %}
-            <div>Birth Date: {{ profile.birth_date }}</div>
-            <div>Gender: {{ profile.gender }}</div>
-        {% else %}
-            <div>Bio: {{ profile.bio }}</div>
-            <div>Speciality: {{ profile.speciality }}</div>
-            <div>Lisence Number: {{ profile.license_number }}</div>
-            <div>Consultation fee: {{ profile.consultation_fee }}</div>
-            <div>City: {{ profile.city }}</div>
-        {% endif %}
-    </div>
-    {% if history %}
-    <div>
 
+        <div style="display: flex; gap: 20px; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 20px;">
+            <div style="width: 120px; height: 120px; border-radius: 50%; overflow: hidden; background-color: #eee; flex-shrink: 0; box-shadow: var(--shadow-elevation-1);">
+                {% if profile.avatar %}
+                    <img src="{{ profile.avatar_url }}" alt="{{ profile.first_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                    <span class="material-icons" style="font-size: 5rem; color: #ccc; display: flex; justify-content: center; align-items: center; height: 100%;">person</span>
+                {% endif %}
+            </div>
+            
+            <div>
+                <h2 style="margin: 0 0 5px 0; color: var(--primary-blue);">{{ profile.first_name }} {{ profile.last_name|upper }}</h2>
+                <p style="margin: 0; color: var(--text-secondary); display: flex; align-items: center; gap: 5px;">
+                    <span class="material-icons" style="font-size: 1.1rem;">email</span> {{ user.email }}
+                </p>
+                <div style="margin-top: 10px; display: flex; gap: 10px; align-items: center;">
+                    <span class="badge" style="background-color: var(--primary-blue); color: white;">{{ user.entity }}</span>
+                    {% if user.entity == entities.DOCTOR and profile.is_verified %}
+                        <span style="color: var(--success-color); display: flex; align-items: center; gap: 4px; font-size: 0.9rem; font-weight: bold;">
+                            <span class="material-icons" style="font-size: 1.2rem;">verified</span> Verified
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <h3 style="font-size: 1.2rem; margin-bottom: 15px; color: var(--text-primary);">Details</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div>
+                    <span style="color: var(--text-secondary); font-size: 0.9rem;">Nationality</span>
+                    <p style="margin: 0; font-weight: 500;">{{ profile.Nationality }}</p>
+                </div>
+                <div>
+                    <span style="color: var(--text-secondary); font-size: 0.9rem;">Phone</span>
+                    <p style="margin: 0; font-weight: 500;">{{ profile.tel }}</p>
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <span style="color: var(--text-secondary); font-size: 0.9rem;">Address</span>
+                    <p style="margin: 0; font-weight: 500;">{{ profile.address }}</p>
+                </div>
+
+                {% if user.entity == entities.PATIENT %}
+                    <div>
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">Birth Date</span>
+                        <p style="margin: 0; font-weight: 500;">{{ profile.birth_date|default:'Not provided' }}</p>
+                    </div>
+                    <div>
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">Gender</span>
+                        <p style="margin: 0; font-weight: 500;">{{ profile.get_gender_display|default:'Not specified' }}</p>
+                    </div>
+                {% else %}
+                    <div style="grid-column: 1 / -1;">
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">Biography</span>
+                        <p style="margin: 0; font-weight: 500;">{{ profile.bio|default:'No biography provided.' }}</p>
+                    </div>
+                    <div>
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">Specialty</span>
+                        <p style="margin: 0; font-weight: 500;">{{ profile.specialty|default:'General' }}</p>
+                    </div>
+                    <div>
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">License Number</span>
+                        <p style="margin: 0; font-weight: 500;">{{ profile.license_number }}</p>
+                    </div>
+                    <div>
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">Consultation Fee</span>
+                        <p style="margin: 0; font-weight: 500;">${{ profile.consultation_fee }}</p>
+                    </div>
+                    <div>
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">City</span>
+                        <p style="margin: 0; font-weight: 500;">{{ profile.city }}</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions Sidebar -->
+    {% if is_me %}
+    <div style="flex: 1; min-width: 250px;">
+        <div class="card" style="position: sticky; top: 20px;">
+            <h3 style="margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                <span class="material-icons" style="vertical-align: middle;">settings</span> Manage Account
+            </h3>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button id="prof_edit_btn" class="btn btn-primary" style="width: 100%; justify-content: flex-start;">
+                    <span class="material-icons">edit</span> Edit Profile
+                </button>
+                <button id="pass_change_btn" class="btn btn-secondary" style="width: 100%; justify-content: flex-start;">
+                    <span class="material-icons">lock</span> Change Password
+                </button>
+                <hr style="border: 0; height: 1px; background-color: #eee; width: 100%; margin: 10px 0;">
+                <button id="acc_del_btn" class="btn btn-danger" style="width: 100%; justify-content: flex-start;">
+                    <span class="material-icons">delete_forever</span> Delete Account
+                </button>
+            </div>
+        </div>
     </div>
     {% endif %}
 </div>
+
+{% if history %}
+<div class="card" style="margin-top: 30px;">
+    <h3 style="color: var(--primary-blue); margin-top: 0; display: flex; align-items: center; gap: 10px;">
+        <span class="material-icons">history</span> Recent History
+    </h3>
+    <p style="color: var(--text-secondary); margin-bottom: 15px;">A brief overview of your latest consultations.</p>
+    <a href="{% url 'my_history' %}" class="btn btn-secondary btn-sm">View Full History</a>
+</div>
+{% endif %}
+
 {% endblock %}
 
-
 {% block scripts %}
+<!-- Ensure custom buttons trigger proper routing based on user type -->
 <script src="{% static 'users/js/profile.js' %}"></script>
 {% endblock %}

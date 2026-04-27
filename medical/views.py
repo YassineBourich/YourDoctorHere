@@ -12,14 +12,31 @@ from users.models import Doctor, Patient
 
 
 def _current_patient(user):
+    """
+    Helper function to safely resolve the Patient profile.
+    Why: Reduces boilerplate across multiple views that strictly require a Patient instance.
+    """
     return Patient.objects.filter(user=user).first()
 
 
 def _current_doctor(user):
+    """
+    Helper function to safely resolve the Doctor profile.
+    Why: Ensures we handle missing profiles gracefully without throwing 500 errors.
+    """
     return Doctor.objects.filter(user=user).first()
 
 
 def _available_slot_count_for_date(doctor, selected_date):
+    """
+    Calculates the exact number of bookable slots a doctor has on a specific day.
+    
+    Why we do this dynamically instead of storing a counter:
+    Storing a hardcoded 'available_slots' integer on the Doctor model would lead to
+    cache invalidation nightmares and race conditions when multiple patients book
+    simultaneously. Calculating it on-the-fly ensures 100% accuracy based on the
+    current state of BlockedDates, WeeklySlots, and active Appointments.
+    """
     if BlockedDate.objects.filter(doctor=doctor, date=selected_date).exists():
         return 0
 
@@ -39,6 +56,15 @@ def _available_slot_count_for_date(doctor, selected_date):
 
 @login_required
 def doctor_directory(request):
+    """
+    Displays a searchable list of doctors.
+    
+    Why we prefetch `specialty` and calculate availability here:
+    Using `select_related` prevents the N+1 query problem when listing doctors.
+    The availability calculation allows patients to immediately see if a doctor
+    is worth clicking on, improving user experience and reducing server load from
+    unnecessary profile views.
+    """
     if request.user.entity != entities.PATIENT:
         messages.error(request, "Only patients can search for doctors.")
         return redirect('home')
@@ -101,12 +127,19 @@ def doctor_detail(request, doctor_uuid):
 
 @login_required
 def my_appointments(request):
+    """
+    Displays the appointment dashboard.
+    
+    Why we use a unified view for both roles:
+    Both patients and doctors need to see appointments categorized by status. 
+    By sharing the view logic but varying the query (`patient=...` vs `doctor=...`),
+    we eliminate duplicate code while still strictly isolating the data they can access.
+    """
     if request.user.entity == entities.PATIENT:
         patient = _current_patient(request.user)
         appointments = Appointment.objects.filter(patient=patient).select_related(
             'patient',
             'doctor',
-            'doctor__specialty',
         )
     elif request.user.entity == entities.DOCTOR:
         doctor = _current_doctor(request.user)
@@ -135,6 +168,14 @@ def my_appointments(request):
 
 @login_required
 def appointment_detail(request, appointment_uuid):
+    """
+    Provides deep detail for an individual appointment.
+    
+    Why we evaluate permissions granularly (`can_confirm`, `can_complete`):
+    Rather than doing these checks in the template, we compute them in the view.
+    This strictly enforces state machine transitions (e.g., you cannot 'complete'
+    an appointment that isn't 'confirmed' yet) before the UI even renders the buttons.
+    """
     appointment = get_object_or_404(Appointment, uuid=appointment_uuid)
     patient = _current_patient(request.user)
     doctor = _current_doctor(request.user)
@@ -251,6 +292,17 @@ def doctor_slots(request, doctor_uuid):
 
 @login_required
 def slot_detail(request, doctor_uuid, slot_id):
+    """
+    Checks real-time availability for a specific slot on a specific date.
+    
+    Why this logic is complex:
+    A 'slot' is just a weekly template. To know if it's truly available on a specific Tuesday,
+    we must verify:
+    1. The date is in the future.
+    2. The doctor hasn't blocked the entire day.
+    3. The date actually falls on the correct day of the week for this slot.
+    4. No other active appointment exists at that exact time on that date.
+    """
     if request.user.entity != entities.PATIENT:
         messages.error(request, "Only patients can view slots.")
         return redirect('home')
@@ -296,6 +348,15 @@ def slot_detail(request, doctor_uuid, slot_id):
 
 @login_required
 def book_appointment(request, doctor_uuid):
+    """
+    Handles the actual creation of an appointment.
+    
+    Why we use transaction.atomic() here:
+    Booking is highly vulnerable to race conditions (two patients clicking 'Book' at the
+    exact same millisecond). By wrapping the creation in an atomic transaction, we let the
+    database's UniqueConstraint block the duplicate attempt and handle it gracefully without
+    crashing the app.
+    """
     if request.user.entity != entities.PATIENT:
         messages.error(request, "Only patients can book appointments.")
         return redirect('home')
@@ -415,6 +476,11 @@ def add_note(request, appointment_uuid):
 
 @login_required
 def my_history(request):
+    """
+    Renders the immutable consultation history.
+    Using select_related heavily here to pull in doctor and note details without hitting
+    the database multiple times in the template loop.
+    """
     history_entries = PatientHistory.objects.select_related(
         'patient',
         'appointment',
@@ -458,6 +524,15 @@ def my_slots(request):
 
 @login_required
 def add_slot(request):
+    """
+    Creates a new template slot for the doctor's weekly schedule.
+    
+    Why we check for overlaps explicitly:
+    Since doctors can set varying start and end times, we need to ensure that a new slot
+    (e.g., 9:00-10:00) doesn't overlap with an existing slot (e.g., 9:30-10:30). 
+    This is complex to enforce purely via database constraints, so we run a specific 
+    range query before saving.
+    """
     if request.user.entity != entities.DOCTOR:
         messages.error(request, "Only doctors can add weekly slots.")
         return redirect('home')

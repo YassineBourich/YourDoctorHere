@@ -1,23 +1,65 @@
 {% extends 'base.html' %}
 
+{% block DocumentTitle %}Slots - {{ doctor }} - YourDoctorHere{% endblock %}
+
 {% block content %}
-<h1>Weekly Slots for {{ doctor }}</h1>
+<div style="margin-bottom: 2rem;">
+    <h1 style="color: var(--primary-blue); display: flex; align-items: center; gap: 10px;">
+        <span class="material-icons" style="font-size: 2.5rem;">event_available</span>
+        Weekly Slots for {{ doctor }}
+    </h1>
+    <p><a href="{% url 'medical_doctor_detail' doctor_uuid=doctor.uuid %}" class="btn btn-secondary btn-sm" style="padding: 5px 10px; font-size: 0.9rem;">
+        <span class="material-icons" style="font-size: 1rem;">arrow_back</span> Back to Profile
+    </a></p>
+</div>
 
-{% if blocked_dates %}
-<h2>Unavailable Dates</h2>
-{% for blocked_date in blocked_dates %}
-<p>{{ blocked_date.date }}{% if blocked_date.reason %} - {{ blocked_date.reason }}{% endif %}</p>
-{% endfor %}
-{% endif %}
-
-{% if slots %}
-    {% for slot in slots %}
-    <div>
-        <p>{{ slot.get_day_of_week_display }}: {{ slot.start_time }} - {{ slot.end_time }}</p>
-        <a href="{% url 'slot_detail' doctor_uuid=doctor.uuid slot_id=slot.id %}">Choose a date</a>
+<div style="display: flex; gap: 30px; flex-wrap: wrap;">
+    <!-- Available Slots -->
+    <div style="flex: 2; min-width: 300px;">
+        <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">Available Slots</h2>
+        
+        {% if slots %}
+            <div class="grid-cards">
+                {% for slot in slots %}
+                <div class="card" style="text-align: center; padding: 20px 10px;">
+                    <div style="font-size: 1.2rem; font-weight: bold; color: var(--primary-blue); margin-bottom: 5px;">
+                        {{ slot.get_day_of_week_display }}
+                    </div>
+                    <div style="color: var(--text-secondary); margin-bottom: 15px; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                        <span class="material-icons" style="font-size: 1.2rem;">schedule</span>
+                        {{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}
+                    </div>
+                    <a href="{% url 'slot_detail' doctor_uuid=doctor.uuid slot_id=slot.id %}" class="btn btn-primary" style="width: 100%;">Select Date</a>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="card" style="text-align: center; padding: 40px;">
+                <span class="material-icons" style="font-size: 3rem; color: #ccc;">event_busy</span>
+                <p style="color: var(--text-secondary); margin-top: 10px;">This doctor has not published any weekly slots yet.</p>
+            </div>
+        {% endif %}
     </div>
-    {% endfor %}
-{% else %}
-    <p>This doctor has not published weekly slots yet.</p>
-{% endif %}
+
+    <!-- Unavailable Dates sidebar -->
+    {% if blocked_dates %}
+    <div style="flex: 1; min-width: 250px; max-width: 350px;">
+        <div class="card" style="background-color: #FFF3E0; border-left: 4px solid var(--warning-color);">
+            <h3 style="color: var(--warning-color); margin-top: 0; display: flex; align-items: center; gap: 8px;">
+                <span class="material-icons">event_busy</span> Unavailable Dates
+            </h3>
+            <ul style="list-style-type: none; padding-left: 0; margin-bottom: 0;">
+                {% for blocked_date in blocked_dates %}
+                <li style="padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.05); color: var(--text-secondary);">
+                    <strong>{{ blocked_date.date }}</strong>
+                    {% if blocked_date.reason %}
+                        <br><span style="font-size: 0.9em; opacity: 0.8;">{{ blocked_date.reason }}</span>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+</div>
 {% endblock %}

@@ -29,23 +29,35 @@ from rest_framework import status
 
 from .serializers import *
 
-# Create your views here.
+
 def home(request):
+    """
+    Renders the landing page.
+    Logic for routing authenticated users to their respective dashboards is handled
+    within the home template itself to reduce backend redirection overhead.
+    """
     return render(request, "home.html", {})
 
-# Registration View
+
 def registration_view(request):
-    # Initializing profile forms
+    """
+    Handles user registration for both patients and doctors.
+    
+    Why we process entity types manually:
+    We use a single registration view with a hidden 'entity' field instead of separate URLs
+    to simplify the frontend (one unified form with tabs). The backend parses this entity
+    to instantiate either a Patient or Doctor profile alongside the base User model.
+    This guarantees that every active user has an associated profile immediately upon creation.
+    """
     patient_profile_form = PatientForm()
     doctor_profile_form = DoctorForm()
-    # Conditionning on methods
+    
     if request.method == 'POST':
-        # Fill the User registration form with the request data
         user_form = UserRegistrationForm(request.POST)
-        # Retrieve the entity type
         entity = request.POST.get('entity')
-        # Register the user with profile according to entity type
-        # If ok, wait for email activation
+        
+        # We delegate the atomic transaction of creating the User + Profile to register_user_profile
+        # to ensure we don't end up with orphaned User records if profile creation fails.
         if entity == entities.PATIENT:
             patient_profile_form = PatientForm(request.POST, request.FILES)
             uuid, ok = register_user_profile(request, user_form, patient_profile_form, entity)
@@ -58,12 +70,9 @@ def registration_view(request):
             uuid, ok = register_user_profile(request, user_form, doctor_profile_form, entity)
             if ok:
                 return redirect("wait_for_activation", uuid)
-        
         else:
             messages.error(request, "Please choose a valid account type.")
-
     else:
-        # If the method is not POST, create and send empty form
         user_form = UserRegistrationForm()
         
     context = {
@@ -75,8 +84,15 @@ def registration_view(request):
     }
     return render(request, 'users/registration/registration.html', context)
 
-# Send Email Verification View
+
 def send_verification_email_view(request, uuid):
+    """
+    Triggers the dispatch of an activation email.
+    
+    Why this is a dedicated view:
+    Separating this from registration allows users who lost their initial email or had it
+    bounce to request a new verification link without having to re-register.
+    """
     user = get_user_by_uuid_or_404(uuid)
     if user.is_email_verified:
         if request.user.is_authenticated:
@@ -85,25 +101,30 @@ def send_verification_email_view(request, uuid):
             return redirect('login')
     return send_email_and_redirect(request, user, uuid)
 
-# Wait for Activation View
+
 def wait_for_activation_view(request, uuid):
     user = get_user_by_uuid_or_404(uuid)
     return render(request, "users/emails/wait_for_activation.html", {'user_uuid': uuid, 'user': user})
 
-# Login View
+
 def login_view(request):
-    # If method is not POST, return an empty AuthenticationForm
+    """
+    Authenticates the user and initiates their session.
+    
+    Why we check email verification during login:
+    Django's default authenticate() doesn't enforce custom verification states. We explicitly
+    check `is_email_verified` *after* a successful password check to prevent unverified
+    accounts from accessing the platform, while still providing a clear path to resend
+    the verification email if they try to log in.
+    """
     if request.method == 'POST':
-        # Fill the form with the POST data
         user_form = AuthenticationForm(request, data=request.POST)
-        # Validate the form
         if user_form.is_valid():
-            # Authenticate user and login
             user = user_form.get_user()
-            # If the user is not active, send activation email
+            
+            # Guard clause against unverified emails
             if user.is_email_verified:
                 login(request, user)
-            
                 messages.success(request, f"Welcome back, {user.email}!")
                 return redirect('home')
             else:
@@ -117,29 +138,37 @@ def login_view(request):
     }
     return render(request, 'users/registration/login.html', context)
 
-# Email Verification View
+
 def verify_email_view(request, uidb64, token):
+    """
+    Verifies the email based on the token clicked in the email link.
+    We use uidb64 and token to ensure the link cannot be easily forged.
+    """
     try:
-        # Decode the uid and resolve the user
         uid = urlsafe_base64_decode(uidb64).decode()
         user = User.objects.get(pk=uid)
     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
 
-    # If user exists and tken is valid then activate account
     if user is not None and default_token_generator.check_token(user, token):
         user.is_email_verified = True
         user.save()
         return redirect('login')
     else:
-        # Otherwise return activation invalid page
         return render(request, 'users/emails/activation_invalid.html')
     
+
 def check_email_verification(request, uuid):
     user = get_user_by_uuid_or_404(uuid)
     return JsonResponse({'is_email_verified': user.is_email_verified})
 
+
 def password_reset_demand_view(request):
+    """
+    Handles the request to reset a password.
+    We wrap the user lookup in a try/except but always show a success/neutral message
+    (if we want to prevent email enumeration) or specific errors depending on security policy.
+    """
     if request.method == "POST":
         email = str(request.POST.get('email'))
         try:
@@ -151,68 +180,76 @@ def password_reset_demand_view(request):
     
 def reset_password_view(request, uidb64, token):
     try:
-        # Decode the uid and resolve the user
         uid = urlsafe_base64_decode(uidb64).decode()
         user = User.objects.get(pk=uid)
     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
 
-    # If user exists and token is valid then show the reset password form
     if user is not None and default_token_generator.check_token(user, token):
         return password_reset_confirm(request, user)
     else:
-        # Otherwise return to forgot_password page
         return redirect('forgot_password')
 
+
 def password_reset_confirm(request, user):
-    # 'user' is the object found via the token
+    """
+    Final step in password reset flow.
+    We use SetPasswordForm instead of PasswordChangeForm because the user is not
+    logged in and therefore doesn't know their old password.
+    """
     if request.method == 'POST':
-        # Use SetPasswordForm (not PasswordChangeForm)
         form = SetPasswordForm(user, request.POST)
-        
         if form.is_valid():
-            # Save the new password
             form.save()
-            
             messages.success(request, "Your password has been set. You are now logged in.")
             return redirect('login') 
     else:
-        # Initialize the form for the GET request
         form = SetPasswordForm(user)
         
     return render(request, 'users/password_reset/password_reset_confirm.html', {'form': form})
 
+
 @login_required
 def patient_profile_view(request, id):
+    """
+    Displays patient profile.
+    Why we check `is_me`:
+    We allow users to view other profiles (like doctors viewing patients they have appointments with),
+    but we use `is_me` to conditionally render private actions like 'Edit' or 'Delete' in the template.
+    """
     user = get_user_by_uuid_or_404(id)
     profile = get_object_or_404(Patient, uuid=id)
     history = PatientHistory.objects.filter(patient=profile).order_by('-at')[:5]
-    is_me = False
-    if get_profile_of_user_or_404(request.user).uuid == id:
-        is_me = True
+    
+    is_me = get_profile_of_user_or_404(request.user).uuid == id
+        
     return render(request, "users/profiles/profile.html", {'user': user, 'profile': profile, 'history': history, 'is_me': is_me, 'entities': {'PATIENT': entities.PATIENT, 'DOCTOR': entities.DOCTOR}})
+
 
 @login_required
 def doctor_profile_view(request, id):
     user = get_user_by_uuid_or_404(id)
     profile = get_object_or_404(Doctor, uuid=id)
-    is_me = False
-    if get_profile_of_user_or_404(request.user).uuid == id:
-        is_me = True
+    
+    is_me = get_profile_of_user_or_404(request.user).uuid == id
+        
     return render(request, "users/profiles/profile.html", {'user': user, 'profile': profile, 'history': None, 'is_me': is_me, 'entities': {'PATIENT': entities.PATIENT, 'DOCTOR': entities.DOCTOR}})
+
 
 @login_required
 def profile_edit_view(request):
+    """
+    Handles editing of both patient and doctor profiles.
+    We dynamically swap the ModelForm based on the user's entity to keep the edit route unified.
+    """
     profile = get_profile_of_user_or_404(request.user)
     entity = request.user.entity
 
     if request.method == 'POST':
         if entity == entities.PATIENT:
             edit_form = PatientForm(request.POST, request.FILES, instance=profile)
-        if entity == entities.DOCTOR:
+        elif entity == entities.DOCTOR:
             edit_form = DoctorForm(request.POST, request.FILES, instance=profile)
-        else:
-            pass
             
         if edit_form.is_valid():
             edit_form.save()
@@ -220,24 +257,29 @@ def profile_edit_view(request):
                 return redirect('patient_profile', profile.uuid)
             elif entity == entities.DOCTOR:
                 return redirect('doctor_profile', profile.uuid)
-            else:
-                pass
     else:
         if entity == entities.PATIENT:
             edit_form = PatientForm(instance=profile)
         elif entity == entities.DOCTOR:
             edit_form = DoctorForm(instance=profile)
-        else:
-            pass
     
     return render(request, 'users/profiles/profile_edit.html', {'edit_form': edit_form})
+
+
 @login_required
 def profile_delete_view(request):
+    """
+    Handles account deletion.
+    Why we ask for the password:
+    Deletion is a destructive action. Asking for a password prevents a scenario where a user
+    leaves their session open and a malicious actor deletes their account.
+    """
     if request.method == "POST":
         conf_password = request.POST.get('confirmation_password')
         if request.user.check_password(conf_password):
             user = request.user
             profile = get_profile_of_user_or_404(user)
+            # Both models are cascading/linked, but we explicitly delete to trigger any signals if needed
             user.delete()
             profile.delete()
             logout(request)
@@ -247,8 +289,12 @@ def profile_delete_view(request):
 
     return render(request, "users/profiles/profile_delete.html")
 
+
 @login_required
 def change_password_view(request):
+    """
+    Allows a logged-in user to change their password securely.
+    """
     if request.method == 'POST':
         form = PasswordChangeForm(request.user, request.POST)
         
@@ -256,8 +302,10 @@ def change_password_view(request):
             user = form.save()
             profile = get_profile_of_user_or_404(user)
         
-            # When you change a password, Django's session hash changes. 
-            # This function updates the session so the user isn't kicked out.
+            # Why we call update_session_auth_hash:
+            # When a password changes, Django invalidates the current session hash for security.
+            # Calling this function re-authenticates the current session with the new hash 
+            # so the user isn't abruptly logged out.
             update_session_auth_hash(request, user)
             
             messages.success(request, 'Your password was successfully updated!')
@@ -265,8 +313,6 @@ def change_password_view(request):
                 return redirect('patient_profile', profile.uuid)
             elif user.entity == entities.DOCTOR:
                 return redirect('doctor_profile', profile.uuid)
-            else:
-                pass
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
@@ -274,27 +320,28 @@ def change_password_view(request):
         
     return render(request, 'users/change_password.html', {'form': form})
 
+# ----------------- APIs ----------------- #
+
 # Login API
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_api_view(request):
+    """
+    Token-based authentication for external clients.
+    """
     input_serializer = LoginSerializer(data=request.data)
 
-    # Checking the validity of email and password
     if not input_serializer.is_valid():
         return Response(
             input_serializer.errors,
             status=status.HTTP_400_BAD_REQUEST,
         )
     
-    # Retreiving email and password from request's body
     email = request.data.get('email')
     password = request.data.get('password')
 
-    # Authentication of the user
     user = authenticate(username=email, password=password)
     if user is not None:
-        # If the user is authenticated, created a token and return it
         token, _ = Token.objects.get_or_create(user=user)
         return Response(
             {"token": token.key,},
