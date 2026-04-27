@@ -36,7 +36,8 @@ class User(AbstractUser):
     username = None
     email = models.EmailField(unique=True)
     entity = models.CharField(choices=Entity.choices, default=Entity.PATIENT)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    is_email_verified = models.BooleanField(default=False)
 
     # Tell Django that 'email' is the new ID for login
     USERNAME_FIELD = 'email'
@@ -45,19 +46,11 @@ class User(AbstractUser):
     # Connect the Manager to this Model
     objects = UserManager()
 
-class Speciality(models.Model):
-    slug = models.SlugField(max_length=200)
-    name = models.CharField(max_length=200)
-    description = models.TextField()
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
-
 class BaseProfile(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    avater = models.ImageField(upload_to='avatars/%Y/%m', null=True, blank=True)
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+    avatar = models.ImageField(upload_to='avatars/%Y/%m', null=True, blank=True)
     Nationality = CountryField(blank_label='(select country)', default='MA')
     tel = models.CharField(max_length=20)
     address = models.TextField()
@@ -72,8 +65,6 @@ class BaseProfile(models.Model):
         abstract = True
 
 class Patient(BaseProfile):
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
@@ -86,14 +77,12 @@ class Patient(BaseProfile):
         return f"{self.first_name} {self.last_name}".strip()
 
 class Doctor(BaseProfile):
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
         related_name='doctor',
     )
-    specialty = models.ForeignKey(Speciality , on_delete=models.PROTECT, related_name='doctors', null=True)
+    specialty = models.CharField(max_length=200, null=True, blank=True)
     license_number = models.CharField(max_length=50, unique = True)
     consultation_fee = models.DecimalField(max_digits=10, decimal_places=2)
     city = models.CharField(max_length=100)

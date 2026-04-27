@@ -8,7 +8,11 @@
         <button id="doctor-btn" type="button">Doctor</button>
     </div>
     <div>
+<<<<<<< HEAD
         <form method="post" enctype="multipart/form-data" data-entity-form="patient">
+=======
+        <form method="post" enctype="multipart/form-data">
+>>>>>>> origin/main
             {% csrf_token %}
             <input type="hidden" name="entity" value="{{ PATIENT }}">
             {{ user_form.as_div }}
@@ -18,7 +22,11 @@
                 <input type="submit" value="Sign Up as Patient">
             </div>
         </form>
+<<<<<<< HEAD
         <form method="post" enctype="multipart/form-data" data-entity-form="doctor" hidden>
+=======
+        <form method="post" enctype="multipart/form-data">
+>>>>>>> origin/main
             {% csrf_token %}
             <input type="hidden" name="entity" value="{{ DOCTOR }}">
             {{ user_form.as_div }}
