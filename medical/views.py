@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .forms import BlockedDateForm, MedicalNoteForm, WeeklySlotForm
+from .forms import BlockedDateForm, DoctorSearchForm, MedicalNoteForm, WeeklySlotForm
 from .models import Appointment, BlockedDate, PatientHistory, WeeklySlot
 from users import entities
 from users.models import Doctor, Patient
@@ -22,6 +22,120 @@ def _current_patient(user):
 
 def _current_doctor(user):
     return Doctor.objects.filter(user=user).first()
+
+
+def _available_slot_count_for_date(doctor, selected_date):
+    if BlockedDate.objects.filter(doctor=doctor, date=selected_date).exists():
+        return 0
+
+    slots = WeeklySlot.objects.filter(
+        doctor=doctor,
+        day_of_week=selected_date.weekday(),
+        is_active=True,
+    )
+    booked_times = set(
+        Appointment.objects.filter(
+            doctor=doctor,
+            date=selected_date,
+        ).exclude(status='cancelled').values_list('time_slot', flat=True)
+    )
+    return sum(1 for slot in slots if slot.start_time not in booked_times)
+
+
+@login_required
+def doctor_directory(request):
+    if request.user.entity != entities.PATIENT:
+        messages.error(request, "Only patients can search for doctors.")
+        return redirect('home')
+
+    doctors = Doctor.objects.select_related('specialty').all().order_by('last_name', 'first_name')
+    form = DoctorSearchForm(request.GET or None)
+
+    if form.is_valid():
+        specialty = form.cleaned_data.get('specialty')
+        city = form.cleaned_data.get('city')
+        selected_date = form.cleaned_data.get('date')
+        min_fee = form.cleaned_data.get('min_fee')
+        max_fee = form.cleaned_data.get('max_fee')
+
+        if specialty:
+            doctors = doctors.filter(specialty=specialty)
+        if city:
+            doctors = doctors.filter(city__icontains=city)
+        if min_fee is not None:
+            doctors = doctors.filter(consultation_fee__gte=min_fee)
+        if max_fee is not None:
+            doctors = doctors.filter(consultation_fee__lte=max_fee)
+
+        doctor_results = []
+        for doctor in doctors:
+            if selected_date:
+                doctor.available_slots_count = _available_slot_count_for_date(doctor, selected_date)
+                if doctor.available_slots_count == 0:
+                    continue
+            else:
+                doctor.available_slots_count = doctor.weekly_slots.filter(is_active=True).count()
+            doctor_results.append(doctor)
+        doctors = doctor_results
+    else:
+        for doctor in doctors:
+            doctor.available_slots_count = doctor.weekly_slots.filter(is_active=True).count()
+
+    return render(request, 'medical/doctor_directory.html', {
+        'form': form,
+        'doctors': doctors,
+    })
+
+
+@login_required
+def doctor_detail(request, doctor_uuid):
+    if request.user.entity != entities.PATIENT:
+        messages.error(request, "Only patients can view doctor details.")
+        return redirect('home')
+
+    doctor = get_object_or_404(Doctor.objects.select_related('specialty'), uuid=doctor_uuid)
+    weekly_slots = doctor.weekly_slots.filter(is_active=True).order_by('day_of_week', 'start_time')
+    blocked_dates = doctor.blocked_dates.filter(date__gte=date.today()).order_by('date')
+
+    return render(request, 'medical/doctor_detail.html', {
+        'doctor': doctor,
+        'weekly_slots': weekly_slots,
+        'blocked_dates': blocked_dates,
+    })
+
+
+@login_required
+def my_appointments(request):
+    if request.user.entity == entities.PATIENT:
+        patient = _current_patient(request.user)
+        appointments = Appointment.objects.filter(patient=patient).select_related(
+            'patient',
+            'doctor',
+            'doctor__specialty',
+        )
+    elif request.user.entity == entities.DOCTOR:
+        doctor = _current_doctor(request.user)
+        appointments = Appointment.objects.filter(doctor=doctor).select_related(
+            'doctor',
+            'patient',
+        )
+    else:
+        messages.error(request, "This account cannot access appointments.")
+        return redirect('home')
+
+    requested_appointments = appointments.filter(status='requested').order_by('date', 'time_slot')
+    confirmed_appointments = appointments.filter(status='confirmed').order_by('date', 'time_slot')
+    completed_appointments = appointments.filter(status='completed').order_by('-date', '-time_slot')
+    cancelled_appointments = appointments.filter(status='cancelled').order_by('-date', '-time_slot')
+
+    return render(request, 'medical/my_appointments.html', {
+        'requested_appointments': requested_appointments,
+        'confirmed_appointments': confirmed_appointments,
+        'completed_appointments': completed_appointments,
+        'cancelled_appointments': cancelled_appointments,
+        'is_patient': request.user.entity == entities.PATIENT,
+        'is_doctor': request.user.entity == entities.DOCTOR,
+    })
 
 
 @login_required
