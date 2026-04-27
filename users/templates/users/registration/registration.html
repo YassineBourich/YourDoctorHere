@@ -4,74 +4,92 @@
 {% block DocumentTitle %}Register - YourDoctorHere{% endblock %}
 
 {% block content %}
-<div style="display: flex; justify-content: center; align-items: center; min-height: 80vh; padding: 40px 0;">
-    <div class="card" style="width: 100%; max-width: 600px; padding: 2rem;">
-        <h2 style="text-align: center; color: var(--primary-blue); margin-bottom: 1.5rem;">
-            <span class="material-icons" style="vertical-align: middle; font-size: 2rem;">person_add</span><br>
-            Create an Account
-        </h2>
+<div class="split-container" style="display: flex; min-height: calc(100vh - 150px); margin: -2rem; background-color: var(--surface-color); overflow: hidden;">
+    <!-- Left Branding Side -->
+    <div class="branding-side" style="flex: 1; background: linear-gradient(135deg, var(--primary-blue), var(--accent-purple)); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 3rem; text-align: center;">
+        <span class="material-icons" style="font-size: 5rem; margin-bottom: 1rem;">local_hospital</span>
+        <h1 style="color: white; font-size: 2.5rem; margin-bottom: 1rem;">Join YourDoctorHere</h1>
+        <p style="font-size: 1.2rem; opacity: 0.9; max-width: 400px;">Connect with top healthcare professionals or manage your practice with our modern telemedicine platform.</p>
+    </div>
 
-        <!-- Custom Role Selection Tabs -->
-        <div style="display: flex; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0;">
-            <button id="patient-btn" type="button" style="flex: 1; padding: 12px; background: none; border: none; border-bottom: 3px solid var(--primary-blue); color: var(--primary-blue); font-weight: bold; cursor: pointer; font-size: 1.1rem; transition: all 0.3s;">
-                <span class="material-icons" style="vertical-align: middle;">person</span> Patient
-            </button>
-            <button id="doctor-btn" type="button" style="flex: 1; padding: 12px; background: none; border: none; border-bottom: 3px solid transparent; color: var(--text-secondary); font-weight: bold; cursor: pointer; font-size: 1.1rem; transition: all 0.3s;">
-                <span class="material-icons" style="vertical-align: middle;">medical_services</span> Doctor
-            </button>
-        </div>
+    <!-- Right Form Side -->
+    <div class="form-side" style="flex: 1.2; display: flex; flex-direction: column; justify-content: center; padding: 3rem; overflow-y: auto;">
+        <div style="max-width: 550px; margin: 0 auto; width: 100%;">
+            <div style="margin-bottom: 2rem;">
+                <h2 style="color: var(--primary-blue); margin-bottom: 0.5rem; font-size: 2rem;">Create an Account</h2>
+                <p style="color: var(--text-secondary);">Please fill out the form below to get started.</p>
+            </div>
 
-        <div>
-            <!-- Patient Registration Form -->
-            <form method="post" enctype="multipart/form-data" data-entity-form="patient">
-                {% csrf_token %}
-                <input type="hidden" name="entity" value="{{ PATIENT }}">
-                <div style="margin-bottom: 20px;">
-                    <h3 style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Account Details</h3>
-                    {{ user_form.as_div }}
-                    
-                    <h3 style="margin-top: 20px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Profile Details</h3>
-                    {{ patient_profile_form.as_div }}
-                </div>
+            <!-- Custom Role Selection Tabs -->
+            <div style="display: flex; margin-bottom: 2rem; border-bottom: 2px solid #e0e0e0;">
+                <button id="patient-btn" type="button" style="flex: 1; padding: 12px; background: none; border: none; border-bottom: 3px solid var(--primary-blue); color: var(--primary-blue); font-weight: bold; cursor: pointer; font-size: 1.1rem; transition: all 0.3s;">
+                    <span class="material-icons" style="vertical-align: middle;">person</span> Patient
+                </button>
+                <button id="doctor-btn" type="button" style="flex: 1; padding: 12px; background: none; border: none; border-bottom: 3px solid transparent; color: var(--text-secondary); font-weight: bold; cursor: pointer; font-size: 1.1rem; transition: all 0.3s;">
+                    <span class="material-icons" style="vertical-align: middle;">medical_services</span> Doctor
+                </button>
+            </div>
 
-                <div style="margin-top: 1.5rem;">
-                    <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
-                        Sign Up as Patient
-                    </button>
-                </div>
-            </form>
+            <div style="flex-grow: 1;">
+                <!-- Patient Registration Form -->
+                <form method="post" enctype="multipart/form-data" data-entity-form="patient" style="animation: fadeIn 0.3s ease-out forwards;">
+                    {% csrf_token %}
+                    <input type="hidden" name="entity" value="{{ PATIENT }}">
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; color: var(--primary-blue);">Account Details</h3>
+                        {{ user_form.as_div }}
+                        
+                        <h3 style="margin-top: 30px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; color: var(--primary-blue);">Profile Details</h3>
+                        {{ patient_profile_form.as_div }}
+                    </div>
 
-            <!-- Doctor Registration Form -->
-            <form method="post" enctype="multipart/form-data" data-entity-form="doctor" hidden>
-                {% csrf_token %}
-                <input type="hidden" name="entity" value="{{ DOCTOR }}">
-                <div style="margin-bottom: 20px;">
-                    <h3 style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Account Details</h3>
-                    {{ user_form.as_div }}
-                    
-                    <h3 style="margin-top: 20px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Professional Details</h3>
-                    {{ doctor_profile_form.as_div }}
-                </div>
+                    <div style="margin-top: 2rem; display: flex; justify-content: center;">
+                        <button type="submit" class="btn btn-primary" style="padding: 12px 32px; font-size: 1.1rem;">
+                            Sign Up as Patient
+                        </button>
+                    </div>
+                </form>
 
-                <div style="margin-top: 1.5rem;">
-                    <button type="submit" class="btn btn-accent" style="width: 100%; justify-content: center;">
-                        Sign Up as Doctor
-                    </button>
-                </div>
-            </form>
-        </div>
-        
-        <div style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-secondary);">
-            Already have an account? <a href="{% url 'login' %}">Log in here</a>
+                <!-- Doctor Registration Form -->
+                <form method="post" enctype="multipart/form-data" data-entity-form="doctor" hidden style="animation: fadeIn 0.3s ease-out forwards;">
+                    {% csrf_token %}
+                    <input type="hidden" name="entity" value="{{ DOCTOR }}">
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; color: var(--accent-purple);">Account Details</h3>
+                        {{ user_form.as_div }}
+                        
+                        <h3 style="margin-top: 30px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; color: var(--accent-purple);">Professional Details</h3>
+                        {{ doctor_profile_form.as_div }}
+                    </div>
+
+                    <div style="margin-top: 2rem; display: flex; justify-content: center;">
+                        <button type="submit" class="btn btn-accent" style="padding: 12px 32px; font-size: 1.1rem;">
+                            Sign Up as Doctor
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div style="text-align: center; margin-top: 2rem; font-size: 1rem; color: var(--text-secondary);">
+                Already have an account? <a href="{% url 'login' %}" style="font-weight: bold; color: var(--primary-blue);">Log in here</a>
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+    @media (max-width: 900px) {
+        .branding-side { display: none !important; }
+        .form-side { padding: 2rem 1rem !important; }
+        .split-container { margin: -1rem !important; min-height: calc(100vh - 100px) !important; }
+    }
+</style>
 {% endblock %}
 
 {% block scripts %}
 <script src="{% static 'users/js/registration.js' %}"></script>
 <script>
-    // Overriding the script if it doesn't handle the tab styling properly
+    // Tab switching logic
     document.addEventListener('DOMContentLoaded', () => {
         const patientBtn = document.getElementById('patient-btn');
         const doctorBtn = document.getElementById('doctor-btn');
@@ -90,8 +108,8 @@
         doctorBtn.addEventListener('click', () => {
             patientForm.hidden = true;
             doctorForm.hidden = false;
-            doctorBtn.style.borderBottomColor = 'var(--primary-blue)';
-            doctorBtn.style.color = 'var(--primary-blue)';
+            doctorBtn.style.borderBottomColor = 'var(--accent-purple)';
+            doctorBtn.style.color = 'var(--accent-purple)';
             patientBtn.style.borderBottomColor = 'transparent';
             patientBtn.style.color = 'var(--text-secondary)';
         });

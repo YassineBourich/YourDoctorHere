@@ -115,8 +115,8 @@ a:hover {
 }
 
 .card:hover {
-  box-shadow: 0 8px 16px rgba(142, 36, 170, 0.15); /* Subtle purple hover shadow */
-  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(142, 36, 170, 0.12); /* Softer, slightly purple premium shadow */
+  transform: translateY(-4px);
 }
 
 .card-title {
@@ -348,10 +348,10 @@ textarea:focus {
   font-weight: bold;
 }
 
-.status-requested { background-color: #E3F2FD; color: #1976D2; }
-.status-confirmed { background-color: #E8F5E9; color: #388E3C; }
-.status-completed { background-color: #F3E5F5; color: #7B1FA2; } /* Purple for completed */
-.status-cancelled { background-color: #FFEBEE; color: #D32F2F; }
+.status-requested { background-color: #E3F2FD; color: #1976D2; border: 1px solid rgba(25, 118, 210, 0.1); }
+.status-confirmed { background-color: #E8F5E9; color: #388E3C; border: 1px solid rgba(56, 142, 60, 0.1); }
+.status-completed { background-color: #F3E5F5; color: var(--accent-purple); border: 1px solid rgba(142, 36, 170, 0.1); } 
+.status-cancelled { background-color: #FFEBEE; color: #D32F2F; border: 1px solid rgba(211, 47, 47, 0.1); }
 
 /* Footer */
 footer {

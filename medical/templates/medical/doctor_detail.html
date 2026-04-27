@@ -3,89 +3,120 @@
 {% block DocumentTitle %}{{ doctor }} - YourDoctorHere{% endblock %}
 
 {% block content %}
-<div style="margin-bottom: 2rem;">
-    <p><a href="{% url 'medical_doctor_directory' %}" class="btn btn-secondary btn-sm" style="padding: 5px 10px; font-size: 0.9rem;">
-        <span class="material-icons" style="font-size: 1rem;">arrow_back</span> Back to Directory
-    </a></p>
-</div>
-
-<div class="card" style="display: flex; gap: 30px; align-items: flex-start; margin-bottom: 30px; flex-wrap: wrap;">
-    <div style="width: 150px; height: 150px; border-radius: 50%; overflow: hidden; background-color: #eee; flex-shrink: 0; box-shadow: var(--shadow-elevation-2);">
-        {% if doctor.avatar %}
-            <img src="{{ doctor.avatar_url }}" alt="{{ doctor }}" style="width: 100%; height: 100%; object-fit: cover;">
-        {% else %}
-            <span class="material-icons" style="font-size: 6rem; color: #ccc; display: flex; justify-content: center; align-items: center; height: 100%;">person</span>
-        {% endif %}
+<div style="animation: fadeIn 0.5s ease-out forwards;">
+    <div style="margin-bottom: 2rem;">
+        <a href="{% url 'medical_doctor_directory' %}" class="btn btn-secondary" style="padding: 8px 15px; border-radius: 8px; font-size: 0.9rem;">
+            <span class="material-icons" style="font-size: 1.1rem;">arrow_back</span> Back to Directory
+        </a>
     </div>
-    
-    <div style="flex-grow: 1;">
-        <h1 style="color: var(--primary-blue); margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
-            {{ doctor }}
-            {% if doctor.is_verified %}
-            <span class="material-icons" style="color: var(--success-color);" title="Verified Professional">verified</span>
+
+    <!-- Header / Profile Section -->
+    <div class="card" style="display: flex; gap: 40px; align-items: stretch; margin-bottom: 40px; flex-wrap: wrap; padding: 30px;">
+        <div style="width: 180px; height: 180px; border-radius: 25px; overflow: hidden; background: linear-gradient(135deg, #f5f5f5, #e0e0e0); flex-shrink: 0; box-shadow: 0 10px 25px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center;">
+            {% if doctor.avatar %}
+                <img src="{{ doctor.avatar_url }}" alt="{{ doctor }}" style="width: 100%; height: 100%; object-fit: cover;">
+            {% else %}
+                <span class="material-icons" style="font-size: 8rem; color: #ccc;">person</span>
             {% endif %}
-        </h1>
-        
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
-            <p style="margin: 0; font-size: 1.1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
-                <span class="material-icons" style="color: var(--primary-blue);">medical_services</span> {{ doctor.specialty|default:'General Practitioner' }}
-            </p>
-            <p style="margin: 0; font-size: 1.1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
-                <span class="material-icons" style="color: var(--primary-blue);">location_on</span> {{ doctor.city }}
-            </p>
-            <p style="margin: 0; font-size: 1.1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
-                <span class="material-icons" style="color: var(--primary-blue);">payments</span> ${{ doctor.consultation_fee }} / consultation
-            </p>
         </div>
         
-        <div style="margin-bottom: 20px;">
-            <h3 style="margin-bottom: 10px; font-size: 1.1rem;">About Dr. {{ doctor.last_name }}</h3>
-            <p style="color: var(--text-secondary); line-height: 1.6;">{{ doctor.bio|default:'No biography provided.' }}</p>
-        </div>
-        
-        <div>
-            <a href="{% url 'doctor_slots' doctor_uuid=doctor.uuid %}" class="btn btn-primary" style="padding: 12px 25px; font-size: 1.1rem;">
-                <span class="material-icons">event</span> Book an Appointment
-            </a>
-        </div>
-    </div>
-</div>
-
-<div style="display: flex; gap: 30px; flex-wrap: wrap;">
-    <div style="flex: 2; min-width: 300px;">
-        <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">Weekly Schedule</h2>
-        {% if weekly_slots %}
-            <div class="grid-cards" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
-            {% for slot in weekly_slots %}
-                <div class="card" style="text-align: center; padding: 15px; margin-bottom: 0;">
-                    <p style="font-weight: bold; color: var(--primary-blue); margin-bottom: 5px; font-size: 1.1rem;">{{ slot.get_day_of_week_display }}</p>
-                    <p style="color: var(--text-secondary); margin: 0; display: flex; align-items: center; justify-content: center; gap: 5px;">
-                        <span class="material-icons" style="font-size: 1rem;">schedule</span> {{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}
-                    </p>
-                </div>
-            {% endfor %}
-            </div>
-        {% else %}
-            <p style="color: var(--text-secondary); font-style: italic;">No weekly slots published yet.</p>
-        {% endif %}
-    </div>
-
-    {% if blocked_dates %}
-    <div style="flex: 1; min-width: 250px;">
-        <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">Unavailable Dates</h2>
-        <div class="card" style="background-color: #FFF3E0; border-left: 4px solid var(--warning-color);">
-            <ul style="list-style-type: none; padding-left: 0; margin-bottom: 0;">
-            {% for blocked_date in blocked_dates %}
-                <li style="padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.05); color: var(--text-secondary);">
-                    <strong>{{ blocked_date.date }}</strong>
-                    {% if blocked_date.reason %}
-                        <br><span style="font-size: 0.9em;">{{ blocked_date.reason }}</span>
+        <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
+            <div style="margin-bottom: 20px;">
+                <h1 style="color: var(--primary-blue); margin-bottom: 8px; font-size: 2.2rem; display: flex; align-items: center; gap: 12px;">
+                    Dr. {{ doctor.user.first_name }} {{ doctor.user.last_name }}
+                    {% if doctor.is_verified %}
+                    <span class="material-icons" style="color: var(--success-color); font-size: 1.8rem;" title="Verified Professional">verified</span>
                     {% endif %}
-                </li>
-            {% endfor %}
-            </ul>
+                </h1>
+                <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                    <span style="background: rgba(142, 36, 170, 0.1); color: var(--accent-purple); padding: 5px 15px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 5px;">
+                        <span class="material-icons" style="font-size: 1.1rem;">medical_services</span> {{ doctor.specialty|default:'General Practitioner' }}
+                    </span>
+                    <span style="color: var(--text-secondary); display: flex; align-items: center; gap: 5px;">
+                        <span class="material-icons" style="font-size: 1.1rem; color: var(--primary-blue);">location_on</span> {{ doctor.city }}
+                    </span>
+                    <span style="color: var(--text-secondary); display: flex; align-items: center; gap: 5px;">
+                        <span class="material-icons" style="font-size: 1.1rem; color: var(--success-color);">payments</span> ${{ doctor.consultation_fee }} per visit
+                    </span>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+                <h3 style="margin-bottom: 12px; font-size: 1.2rem; color: var(--text-primary);">About the Doctor</h3>
+                <p style="color: var(--text-secondary); line-height: 1.7; font-size: 1rem; margin: 0;">{{ doctor.bio|default:'No biography provided.' }}</p>
+            </div>
+            
+            <div style="margin-top: auto;">
+                <a href="{% url 'doctor_slots' doctor_uuid=doctor.uuid %}" class="btn btn-primary" style="padding: 14px 40px; font-size: 1.1rem; box-shadow: 0 8px 16px rgba(30, 136, 229, 0.2);">
+                    <span class="material-icons">event</span> Schedule an Appointment
+                </a>
+            </div>
         </div>
     </div>
-    {% endif %}
+
+    <!-- Lower Content: Schedule and Info -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 40px;">
+        <div style="min-width: 300px;">
+            <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--text-primary); border-bottom: 2px solid #eee; padding-bottom: 10px;">Weekly Availability</h2>
+            {% if weekly_slots %}
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px;">
+                {% for slot in weekly_slots %}
+                    <div class="card" style="margin-bottom: 0; padding: 20px; border-left: 4px solid var(--primary-blue); background: #fbfbfb;">
+                        <p style="font-weight: 800; color: var(--primary-blue); margin-bottom: 8px; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.5px;">{{ slot.get_day_of_week_display }}</p>
+                        <p style="color: var(--text-secondary); margin: 0; display: flex; align-items: center; gap: 8px; font-size: 1rem;">
+                            <span class="material-icons" style="font-size: 1.2rem; color: var(--text-secondary);">schedule</span> {{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}
+                        </p>
+                    </div>
+                {% endfor %}
+                </div>
+            {% else %}
+                <div class="card" style="text-align: center; padding: 40px; border: 2px dashed #eee; box-shadow: none;">
+                    <p style="color: var(--text-secondary); font-style: italic; margin: 0;">No weekly slots published yet.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div style="min-width: 250px;">
+            <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--text-primary); border-bottom: 2px solid #eee; padding-bottom: 10px;">Notice Board</h2>
+            
+            {% if blocked_dates %}
+            <div class="card" style="background-color: #FFF3E0; border-top: 4px solid var(--warning-color); padding: 20px;">
+                <h4 style="color: var(--warning-color); display: flex; align-items: center; gap: 8px; margin-bottom: 15px;">
+                    <span class="material-icons">event_busy</span> Unavailable Dates
+                </h4>
+                <ul style="list-style-type: none; padding-left: 0; margin: 0;">
+                {% for blocked_date in blocked_dates %}
+                    <li style="padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05);">
+                        <div style="font-weight: bold; color: var(--text-primary);">{{ blocked_date.date }}</div>
+                        {% if blocked_date.reason %}
+                            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;">{{ blocked_date.reason }}</div>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+                </ul>
+            </div>
+            {% else %}
+            <div class="card" style="background-color: #E8F5E9; border-top: 4px solid var(--success-color); padding: 20px;">
+                <h4 style="color: var(--success-color); display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                    <span class="material-icons">check_circle</span> All Set
+                </h4>
+                <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary);">Dr. {{ doctor.last_name }} has no currently blocked dates. All standard slots are open.</p>
+            </div>
+            {% endif %}
+
+            <div class="card" style="margin-top: 20px; border-left: 4px solid var(--info-color);">
+                <h4 style="margin-bottom: 10px; font-size: 1rem; color: var(--info-color);">Need Help?</h4>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">If you have questions about specific requirements for your consultation, please reach out via our help center.</p>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+    @media (max-width: 1000px) {
+        div[style*="grid-template-columns: 2fr 1fr"] {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>
 {% endblock %}

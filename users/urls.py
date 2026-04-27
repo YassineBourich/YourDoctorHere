@@ -27,11 +27,9 @@ urlpatterns = [
     path('api/profile/me/', views.my_profile_api_view, name='my_profile_api'),
     path('api/profile/me/history/', views.my_history_api_view, name='my_history_api'),
     path('api/doctors/', views.doctors_api_view, name='doctors_api'),
+    path('logout/', views.logout_view, name="logout"),
 ]
 
-"""path('doctor_validation/', None, name=""),
-    path('doctors/', None, name=""),
-    """
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

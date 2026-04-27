@@ -3,86 +3,106 @@
 {% block DocumentTitle %}Find a Doctor - YourDoctorHere{% endblock %}
 
 {% block content %}
-<div style="margin-bottom: 2rem;">
-    <h1 style="color: var(--primary-blue);"><span class="material-icons" style="vertical-align: bottom; font-size: 2.5rem;">search</span> Find a Doctor</h1>
-    <p style="color: var(--text-secondary);">Filter and search through our verified medical professionals.</p>
-</div>
-
-<div style="display: flex; gap: 30px; flex-wrap: wrap;">
-    <!-- Filter Sidebar -->
-    <div style="flex: 1; min-width: 300px; max-width: 400px;">
-        <div class="card" style="position: sticky; top: 20px;">
-            <h3 style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
-                <span class="material-icons" style="vertical-align: middle;">filter_list</span> Filters
-            </h3>
-            <form method="get">
-                <div style="display: flex; flex-direction: column; gap: 15px;">
-                    <!-- form.as_div handles the layout properly with our CSS -->
-                    {{ form.as_div }}
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">
-                    <span class="material-icons">search</span> Search
-                </button>
-            </form>
-        </div>
+<div style="animation: fadeIn 0.5s ease-out forwards;">
+    <div style="margin-bottom: 2.5rem; border-bottom: 2px solid #eee; padding-bottom: 1rem;">
+        <h1 style="color: var(--primary-blue); display: flex; align-items: center; gap: 15px; margin-bottom: 5px;">
+            <span class="material-icons" style="font-size: 2.5rem;">search</span> Find a Doctor
+        </h1>
+        <p style="color: var(--text-secondary); margin: 0; font-size: 1.1rem;">Search and filter through our verified medical professionals.</p>
     </div>
 
-    <!-- Doctor Results -->
-    <div style="flex: 2; min-width: 300px;">
-        {% if doctors %}
-            <div style="display: flex; flex-direction: column; gap: 20px;">
-                {% for doctor in doctors %}
-                <div class="card" style="display: flex; gap: 20px; align-items: flex-start;">
-                    <div style="width: 80px; height: 80px; border-radius: 50%; overflow: hidden; background-color: #eee; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
-                        {% if doctor.avatar %}
-                            <img src="{{ doctor.avatar_url }}" alt="{{ doctor }}" style="width: 100%; height: 100%; object-fit: cover;">
-                        {% else %}
-                            <span class="material-icons" style="font-size: 3rem; color: #ccc;">person</span>
-                        {% endif %}
+    <div style="display: flex; gap: 40px; flex-wrap: wrap;">
+        <!-- Filter Sidebar -->
+        <aside style="flex: 1; min-width: 300px; max-width: 350px;">
+            <div class="card" style="position: sticky; top: 20px; border-top: 4px solid var(--secondary-blue);">
+                <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px; font-size: 1.2rem;">
+                    <span class="material-icons" style="color: var(--text-secondary);">filter_list</span> Search Filters
+                </h3>
+                <form method="get">
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        {{ form.as_div }}
                     </div>
-                    
-                    <div style="flex-grow: 1;">
-                        <h2 style="margin-bottom: 5px; color: var(--primary-blue); display: flex; align-items: center; justify-content: space-between;">
-                            {{ doctor }}
-                            {% if doctor.is_verified %}
-                            <span class="material-icons" style="color: var(--success-color); font-size: 1.2rem;" title="Verified Professional">verified</span>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 25px; padding: 12px; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(30, 136, 229, 0.2);">
+                        <span class="material-icons">search</span> Apply Filters
+                    </button>
+                    {% if request.GET %}
+                    <a href="{% url 'medical_doctor_directory' %}" style="display: block; text-align: center; margin-top: 15px; font-size: 0.9rem; color: var(--text-secondary);">Clear All Filters</a>
+                    {% endif %}
+                </form>
+            </div>
+        </aside>
+
+        <!-- Doctor Results -->
+        <main style="flex: 3; min-width: 300px;">
+            <div style="margin-bottom: 15px; font-size: 0.9rem; color: var(--text-secondary);">
+                Showing <strong>{{ doctors|length }}</strong> doctor(s)
+            </div>
+
+            {% if doctors %}
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    {% for doctor in doctors %}
+                    <div class="card" style="display: flex; gap: 25px; align-items: stretch; padding: 20px; transition: transform 0.3s, box-shadow 0.3s;">
+                        <!-- Left: Avatar -->
+                        <div style="width: 120px; height: 120px; border-radius: 20px; overflow: hidden; background: linear-gradient(135deg, #f5f5f5, #e0e0e0); flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);">
+                            {% if doctor.avatar %}
+                                <img src="{{ doctor.avatar_url }}" alt="{{ doctor }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                                <span class="material-icons" style="font-size: 4rem; color: #ccc;">person</span>
                             {% endif %}
-                        </h2>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-                            <p style="margin: 0; color: var(--text-secondary);">
-                                <span class="material-icons" style="vertical-align: middle; font-size: 1.1rem;">medical_services</span>
-                                {{ doctor.specialty|default:'General' }}
-                            </p>
-                            <p style="margin: 0; color: var(--text-secondary);">
-                                <span class="material-icons" style="vertical-align: middle; font-size: 1.1rem;">location_on</span>
-                                {{ doctor.city }}
-                            </p>
-                            <p style="margin: 0; color: var(--text-secondary);">
-                                <span class="material-icons" style="vertical-align: middle; font-size: 1.1rem;">payments</span>
-                                ${{ doctor.consultation_fee }}
-                            </p>
-                            <p style="margin: 0; color: {% if doctor.available_slots_count > 0 %}var(--success-color){% else %}var(--error-color){% endif %}; font-weight: 500;">
-                                <span class="material-icons" style="vertical-align: middle; font-size: 1.1rem;">event_available</span>
-                                {{ doctor.available_slots_count }} slot(s) {% if form.cleaned_data.date %}on {{ form.cleaned_data.date }}{% endif %}
-                            </p>
                         </div>
                         
-                        <div style="display: flex; gap: 10px;">
-                            <a href="{% url 'medical_doctor_detail' doctor_uuid=doctor.uuid %}" class="btn btn-secondary" style="flex: 1;">View Profile</a>
-                            <a href="{% url 'doctor_slots' doctor_uuid=doctor.uuid %}" class="btn btn-primary" style="flex: 1;">Book Appointment</a>
+                        <!-- Right: Info -->
+                        <div style="flex-grow: 1; display: flex; flex-direction: column;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                                <h2 style="margin: 0; color: var(--primary-blue); font-size: 1.4rem; display: flex; align-items: center; gap: 8px;">
+                                    {{ doctor }}
+                                    {% if doctor.is_verified %}
+                                    <span class="material-icons" style="color: var(--success-color); font-size: 1.2rem;" title="Verified Professional">verified</span>
+                                    {% endif %}
+                                </h2>
+                                <div style="font-weight: 800; font-size: 1.2rem; color: var(--text-primary);">
+                                    ${{ doctor.consultation_fee }}<span style="font-size: 0.8rem; font-weight: normal; color: var(--text-secondary);">/visit</span>
+                                </div>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                                <p style="margin: 0; color: var(--text-secondary); font-size: 0.95rem; display: flex; align-items: center; gap: 5px;">
+                                    <span class="material-icons" style="font-size: 1.1rem; color: var(--accent-purple);">medical_services</span>
+                                    {{ doctor.specialty|default:'General' }}
+                                </p>
+                                <p style="margin: 0; color: var(--text-secondary); font-size: 0.95rem; display: flex; align-items: center; gap: 5px;">
+                                    <span class="material-icons" style="font-size: 1.1rem; color: var(--primary-blue);">location_on</span>
+                                    {{ doctor.city }}
+                                </p>
+                                <p style="margin: 0; color: {% if doctor.available_slots_count > 0 %}var(--success-color){% else %}var(--error-color){% endif %}; font-size: 0.95rem; display: flex; align-items: center; gap: 5px; font-weight: 500;">
+                                    <span class="material-icons" style="font-size: 1.1rem;">event_available</span>
+                                    {{ doctor.available_slots_count }} slot(s) available
+                                </p>
+                            </div>
+                            
+                            <div style="margin-top: auto; display: flex; gap: 15px; flex-wrap: wrap;">
+                                <a href="{% url 'medical_doctor_detail' doctor_uuid=doctor.uuid %}" class="btn btn-secondary" style="padding: 10px 20px;">
+                                    <span class="material-icons" style="font-size: 1.1rem;">visibility</span> View Profile
+                                </a>
+                                <a href="{% url 'doctor_slots' doctor_uuid=doctor.uuid %}" class="btn btn-primary" style="padding: 10px 20px;">
+                                    <span class="material-icons" style="font-size: 1.1rem;">calendar_month</span> Book Appointment
+                                </a>
+                            </div>
                         </div>
                     </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="card" style="text-align: center; padding: 40px 20px;">
-                <span class="material-icons" style="font-size: 4rem; color: #ccc; margin-bottom: 15px;">search_off</span>
-                <h3 style="color: var(--text-secondary);">No doctors found</h3>
-                <p style="color: var(--text-secondary);">Try adjusting your search filters to find available professionals.</p>
-            </div>
-        {% endif %}
+            {% else %}
+                <div class="card" style="text-align: center; padding: 80px 20px; border: 2px dashed #ddd; box-shadow: none;">
+                    <div style="width: 80px; height: 80px; background: #f5f5f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #ccc;">
+                        <span class="material-icons" style="font-size: 3rem;">search_off</span>
+                    </div>
+                    <h2 style="color: var(--text-secondary); margin-bottom: 10px;">No Doctors Found</h2>
+                    <p style="color: var(--text-secondary); max-width: 400px; margin: 0 auto 25px auto;">We couldn't find any professionals matching your search criteria. Try adjusting the filters or searching in another city.</p>
+                    <a href="{% url 'medical_doctor_directory' %}" class="btn btn-secondary">Clear All Filters</a>
+                </div>
+            {% endif %}
+        </main>
     </div>
 </div>
 {% endblock %}

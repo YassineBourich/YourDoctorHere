@@ -4,32 +4,72 @@
 {% block DocumentTitle %}Edit Profile - YourDoctorHere{% endblock %}
 
 {% block content %}
-<div style="display: flex; justify-content: center; align-items: flex-start; padding: 40px 0;">
-    <div class="card" style="width: 100%; max-width: 600px; padding: 2rem;">
-        <div style="margin-bottom: 20px;">
-            <button onclick="history.back()" class="btn btn-secondary btn-sm" style="padding: 5px 10px; font-size: 0.9rem;">
-                <span class="material-icons" style="font-size: 1rem;">arrow_back</span> Cancel
-            </button>
-        </div>
-        
-        <h2 style="color: var(--primary-blue); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-            <span class="material-icons" style="font-size: 2rem;">manage_accounts</span>
-            Edit Profile
-        </h2>
-
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
-                {{ edit_form.as_div }}
+<div style="animation: fadeIn 0.5s ease-out forwards;">
+    <!-- Page Header -->
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #eee;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="background-color: var(--primary-blue); color: white; padding: 10px; border-radius: 50%; display: flex;">
+                <span class="material-icons" style="font-size: 2rem;">manage_accounts</span>
             </div>
+            <div>
+                <h1 style="margin: 0; font-size: 1.8rem; color: var(--text-primary);">Edit Your Profile</h1>
+                <p style="margin: 0; color: var(--text-secondary);">Keep your professional or personal details up to date.</p>
+            </div>
+        </div>
+        <button onclick="history.back()" class="btn btn-secondary">
+            <span class="material-icons">arrow_back</span> Back to Profile
+        </button>
+    </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; font-size: 1.1rem; padding: 12px;">
-                <span class="material-icons">save</span> Save Changes
-            </button>
-        </form>
+    <!-- Main Edit Content -->
+    <div style="display: grid; grid-template-columns: 1fr 300px; gap: 2rem;">
+        <div class="card" style="margin-bottom: 0;">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div style="display: grid; grid-template-columns: 1fr; gap: 10px;">
+                    {{ edit_form.as_div }}
+                </div>
+
+                <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
+                    <button type="submit" class="btn btn-primary" style="padding: 12px 40px; font-size: 1.1rem;">
+                        <span class="material-icons">save</span> Save All Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Sidebar Info -->
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="card" style="background-color: #E3F2FD; border-left: 4px solid var(--primary-blue);">
+                <h4 style="color: var(--primary-blue); margin-bottom: 10px; display: flex; align-items: center; gap: 5px;">
+                    <span class="material-icons" style="font-size: 1.2rem;">info</span> Tips
+                </h4>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin: 0; line-height: 1.5;">
+                    Ensure your consultation fee and specialty are accurate so patients can find you easily. 
+                    Upload a high-quality photo for better visibility.
+                </p>
+            </div>
+            
+            <div class="card" style="background-color: #F3E5F5; border-left: 4px solid var(--accent-purple);">
+                <h4 style="color: var(--accent-purple); margin-bottom: 10px; display: flex; align-items: center; gap: 5px;">
+                    <span class="material-icons" style="font-size: 1.2rem;">security</span> Security
+                </h4>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 15px;">
+                    Want to update your password instead?
+                </p>
+                <a href="{% if user.entity == 'Doctor' %}{% url 'doctors_change_password' %}{% else %}{% url 'patients_change_password' %}{% endif %}" class="btn btn-accent" style="font-size: 0.9rem;">
+                    Change Password
+                </a>
+            </div>
+        </div>
     </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
+<style>
+    @media (max-width: 900px) {
+        div[style*="grid-template-columns: 1fr 300px"] {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>
 {% endblock %}

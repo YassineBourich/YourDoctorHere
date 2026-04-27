@@ -320,6 +320,17 @@ def change_password_view(request):
         
     return render(request, 'users/change_password.html', {'form': form})
 
+
+@login_required
+def logout_view(request):
+    """
+    Terminates the user session.
+    """
+    logout(request)
+    messages.info(request, "You have been logged out.")
+    return redirect('home')
+
+
 # ----------------- APIs ----------------- #
 
 # Login API

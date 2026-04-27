@@ -3,93 +3,137 @@
 {% block DocumentTitle %}My Appointments - YourDoctorHere{% endblock %}
 
 {% block content %}
-<div style="margin-bottom: 2rem;">
-    <h1 style="color: var(--primary-blue);"><span class="material-icons" style="vertical-align: bottom; font-size: 2.5rem;">event_note</span> My Appointments</h1>
-    {% if is_patient %}
-    <p style="color: var(--text-secondary);">Manage your upcoming visits and past consultations.</p>
-    {% elif is_doctor %}
-    <p style="color: var(--text-secondary);">Manage patient appointments and your schedule.</p>
+<div style="animation: fadeIn 0.5s ease-out forwards;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #eee;">
+        <div>
+            <h1 style="color: var(--primary-blue); margin-bottom: 5px; display: flex; align-items: center; gap: 10px;">
+                <span class="material-icons" style="font-size: 2.5rem;">event_note</span> My Appointments
+            </h1>
+            <p style="color: var(--text-secondary); margin: 0;">
+                {% if is_patient %}Manage your upcoming visits and past consultations.{% else %}Manage patient appointments and your schedule.{% endif %}
+            </p>
+        </div>
+        {% if is_patient %}
+        <a href="{% url 'medical_doctor_directory' %}" class="btn btn-primary" style="box-shadow: 0 4px 10px rgba(30, 136, 229, 0.3);">
+            <span class="material-icons">add</span> Book New Appointment
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Stats Overview -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; margin-bottom: 3rem;">
+        <div class="card" style="margin-bottom: 0; padding: 1rem; text-align: center; border-bottom: 4px solid var(--primary-blue);">
+            <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; font-weight: bold;">Requested</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: var(--primary-blue);">{{ requested_appointments|length }}</div>
+        </div>
+        <div class="card" style="margin-bottom: 0; padding: 1rem; text-align: center; border-bottom: 4px solid var(--success-color);">
+            <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; font-weight: bold;">Confirmed</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: var(--success-color);">{{ confirmed_appointments|length }}</div>
+        </div>
+        <div class="card" style="margin-bottom: 0; padding: 1rem; text-align: center; border-bottom: 4px solid var(--text-secondary);">
+            <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; font-weight: bold;">Completed</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: var(--text-secondary);">{{ completed_appointments|length }}</div>
+        </div>
+    </div>
+
+    <!-- Sections -->
+    {% if requested_appointments %}
+    <h2 style="font-size: 1.3rem; margin-bottom: 1.5rem; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+        <span class="material-icons" style="color: var(--warning-color);">pending_actions</span> Pending Approval
+    </h2>
+    <div class="grid-cards" style="margin-bottom: 3rem;">
+        {% for appointment in requested_appointments %}
+        <div class="card" style="position: relative; border-top: 3px solid var(--warning-color);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                <h3 style="font-size: 1.1rem; margin: 0;">{{ appointment.date }}</h3>
+                <span class="badge status-requested">Requested</span>
+            </div>
+            <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.95rem;">
+                <span class="material-icons" style="font-size: 1rem; vertical-align: middle;">schedule</span> {{ appointment.time_slot }}
+            </p>
+            <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem;">
+                <div style="margin-bottom: 5px;"><strong>{% if is_patient %}Doctor{% else %}Patient{% endif %}:</strong> {% if is_patient %}{{ appointment.doctor }}{% else %}{{ appointment.patient }}{% endif %}</div>
+                <div style="color: var(--text-secondary); font-size: 0.85rem;">{{ appointment.doctor.specialty }}</div>
+            </div>
+            <a href="{% url 'appointment_detail' appointment_uuid=appointment.uuid %}" class="btn btn-secondary">View Details</a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if confirmed_appointments %}
+    <h2 style="font-size: 1.3rem; margin-bottom: 1.5rem; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+        <span class="material-icons" style="color: var(--success-color);">check_circle</span> Upcoming Confirmed
+    </h2>
+    <div class="grid-cards" style="margin-bottom: 3rem;">
+        {% for appointment in confirmed_appointments %}
+        <div class="card" style="position: relative; border-top: 3px solid var(--success-color); box-shadow: 0 4px 15px rgba(76, 175, 80, 0.1);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                <h3 style="font-size: 1.1rem; margin: 0;">{{ appointment.date }}</h3>
+                <span class="badge status-confirmed">Confirmed</span>
+            </div>
+            <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.95rem;">
+                <span class="material-icons" style="font-size: 1rem; vertical-align: middle;">schedule</span> {{ appointment.time_slot }}
+            </p>
+            <div style="background: rgba(76, 175, 80, 0.05); padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem;">
+                <div style="margin-bottom: 5px;"><strong>{% if is_patient %}Doctor{% else %}Patient{% endif %}:</strong> {% if is_patient %}{{ appointment.doctor }}{% else %}{{ appointment.patient }}{% endif %}</div>
+                <div style="color: var(--text-secondary); font-size: 0.85rem;">{{ appointment.doctor.specialty }}</div>
+            </div>
+            <a href="{% url 'appointment_detail' appointment_uuid=appointment.uuid %}" class="btn btn-primary">Open Appointment</a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if not requested_appointments and not confirmed_appointments %}
+    <div class="card" style="text-align: center; padding: 60px 20px; background-color: #fcfcfc; border: 2px dashed #ddd; box-shadow: none;">
+        <span class="material-icons" style="font-size: 4rem; color: #ccc; margin-bottom: 20px;">calendar_today</span>
+        <h2 style="color: var(--text-secondary);">No upcoming appointments</h2>
+        <p style="color: var(--text-secondary); max-width: 400px; margin: 0 auto 30px auto;">You don't have any active or pending appointments at the moment.</p>
+        {% if is_patient %}
+        <a href="{% url 'medical_doctor_directory' %}" class="btn btn-primary">Book an Appointment</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if completed_appointments or cancelled_appointments %}
+    <details style="margin-top: 40px;">
+        <summary style="cursor: pointer; color: var(--text-secondary); font-weight: bold; padding: 10px; border-radius: 8px; background: #eee; display: inline-block;">
+            Show Past & Cancelled Appointments
+        </summary>
+        <div style="margin-top: 20px;">
+            {% if completed_appointments %}
+            <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--text-secondary);">Completed</h3>
+            <div class="grid-cards" style="margin-bottom: 30px;">
+                {% for appointment in completed_appointments %}
+                <div class="card" style="opacity: 0.8; padding: 1.2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="font-weight: bold;">{{ appointment.date }}</span>
+                        <span class="badge status-completed">Completed</span>
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--text-secondary);">With {{ appointment.doctor }}</div>
+                    <a href="{% url 'appointment_detail' appointment_uuid=appointment.uuid %}" style="display: block; margin-top: 10px; font-size: 0.85rem; font-weight: bold;">View Records</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            {% if cancelled_appointments %}
+            <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--text-secondary);">Cancelled</h3>
+            <div class="grid-cards">
+                {% for appointment in cancelled_appointments %}
+                <div class="card" style="opacity: 0.6; padding: 1.2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="font-weight: bold; text-decoration: line-through;">{{ appointment.date }}</span>
+                        <span class="badge status-cancelled">Cancelled</span>
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--text-secondary);">With {{ appointment.doctor }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </details>
     {% endif %}
 </div>
-
-<!-- Requested Appointments -->
-<h2 style="color: var(--text-primary); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">Requested</h2>
-{% if requested_appointments %}
-<div class="grid-cards" style="margin-bottom: 40px;">
-    {% for appointment in requested_appointments %}
-    <div class="card" style="position: relative;">
-        <span class="badge status-requested" style="position: absolute; top: 15px; right: 15px;">Requested</span>
-        <h3 style="margin-bottom: 5px;"><span class="material-icons" style="vertical-align: middle; font-size: 1.2rem; color: var(--primary-blue);">calendar_today</span> {{ appointment.date }}</h3>
-        <p style="color: var(--text-secondary); margin-bottom: 15px;"><span class="material-icons" style="vertical-align: middle; font-size: 1.2rem;">schedule</span> {{ appointment.time_slot }}</p>
-        <hr style="border: 0; height: 1px; background: #eee; margin-bottom: 15px;">
-        <p style="margin-bottom: 5px;"><strong>Doctor:</strong> {{ appointment.doctor }}</p>
-        <p style="margin-bottom: 20px;"><strong>Patient:</strong> {{ appointment.patient }}</p>
-        <a href="{% url 'appointment_detail' appointment_uuid=appointment.uuid %}" class="btn btn-secondary" style="width: 100%;">View Details</a>
-    </div>
-    {% endfor %}
-</div>
-{% else %}
-<p style="color: var(--text-secondary); margin-bottom: 40px; font-style: italic;">No requested appointments.</p>
-{% endif %}
-
-<!-- Confirmed Appointments -->
-<h2 style="color: var(--text-primary); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">Confirmed</h2>
-{% if confirmed_appointments %}
-<div class="grid-cards" style="margin-bottom: 40px;">
-    {% for appointment in confirmed_appointments %}
-    <div class="card" style="position: relative; border-left: 4px solid var(--success-color);">
-        <span class="badge status-confirmed" style="position: absolute; top: 15px; right: 15px;">Confirmed</span>
-        <h3 style="margin-bottom: 5px;"><span class="material-icons" style="vertical-align: middle; font-size: 1.2rem; color: var(--primary-blue);">calendar_today</span> {{ appointment.date }}</h3>
-        <p style="color: var(--text-secondary); margin-bottom: 15px;"><span class="material-icons" style="vertical-align: middle; font-size: 1.2rem;">schedule</span> {{ appointment.time_slot }}</p>
-        <hr style="border: 0; height: 1px; background: #eee; margin-bottom: 15px;">
-        <p style="margin-bottom: 5px;"><strong>Doctor:</strong> {{ appointment.doctor }}</p>
-        <p style="margin-bottom: 20px;"><strong>Patient:</strong> {{ appointment.patient }}</p>
-        <a href="{% url 'appointment_detail' appointment_uuid=appointment.uuid %}" class="btn btn-primary" style="width: 100%;">Open Appointment</a>
-    </div>
-    {% endfor %}
-</div>
-{% else %}
-<p style="color: var(--text-secondary); margin-bottom: 40px; font-style: italic;">No confirmed appointments.</p>
-{% endif %}
-
-<!-- Completed Appointments -->
-<h2 style="color: var(--text-primary); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">Completed</h2>
-{% if completed_appointments %}
-<div class="grid-cards" style="margin-bottom: 40px;">
-    {% for appointment in completed_appointments %}
-    <div class="card" style="position: relative; background-color: #fcfcfc;">
-        <span class="badge status-completed" style="position: absolute; top: 15px; right: 15px;">Completed</span>
-        <h3 style="margin-bottom: 5px;"><span class="material-icons" style="vertical-align: middle; font-size: 1.2rem; color: var(--text-secondary);">calendar_today</span> {{ appointment.date }}</h3>
-        <p style="color: var(--text-secondary); margin-bottom: 15px;"><span class="material-icons" style="vertical-align: middle; font-size: 1.2rem;">schedule</span> {{ appointment.time_slot }}</p>
-        <hr style="border: 0; height: 1px; background: #eee; margin-bottom: 15px;">
-        <p style="margin-bottom: 5px;"><strong>Doctor:</strong> {{ appointment.doctor }}</p>
-        <p style="margin-bottom: 20px;"><strong>Patient:</strong> {{ appointment.patient }}</p>
-        <a href="{% url 'appointment_detail' appointment_uuid=appointment.uuid %}" class="btn btn-secondary" style="width: 100%;">View Records</a>
-    </div>
-    {% endfor %}
-</div>
-{% else %}
-<p style="color: var(--text-secondary); margin-bottom: 40px; font-style: italic;">No completed appointments.</p>
-{% endif %}
-
-<!-- Cancelled Appointments -->
-<h2 style="color: var(--text-primary); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">Cancelled</h2>
-{% if cancelled_appointments %}
-<div class="grid-cards">
-    {% for appointment in cancelled_appointments %}
-    <div class="card" style="position: relative; opacity: 0.8;">
-        <span class="badge status-cancelled" style="position: absolute; top: 15px; right: 15px;">Cancelled</span>
-        <h3 style="margin-bottom: 5px; color: var(--text-secondary);"><span class="material-icons" style="vertical-align: middle; font-size: 1.2rem;">calendar_today</span> {{ appointment.date }}</h3>
-        <p style="color: var(--text-secondary); margin-bottom: 15px;"><span class="material-icons" style="vertical-align: middle; font-size: 1.2rem;">schedule</span> {{ appointment.time_slot }}</p>
-        <hr style="border: 0; height: 1px; background: #eee; margin-bottom: 15px;">
-        <p style="margin-bottom: 5px;"><strong>Doctor:</strong> {{ appointment.doctor }}</p>
-        <p style="margin-bottom: 20px;"><strong>Patient:</strong> {{ appointment.patient }}</p>
-        <a href="{% url 'appointment_detail' appointment_uuid=appointment.uuid %}" class="btn btn-secondary" style="width: 100%;">View Details</a>
-    </div>
-    {% endfor %}
-</div>
-{% else %}
-<p style="color: var(--text-secondary); font-style: italic;">No cancelled appointments.</p>
-{% endif %}
-
 {% endblock %}

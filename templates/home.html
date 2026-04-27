@@ -1,55 +1,104 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div style="text-align: center; padding: 40px 0;">
-    <h1 style="color: var(--primary-blue); font-size: 2.5rem; margin-bottom: 10px;">Welcome to YourDoctorHere</h1>
-    <p style="color: var(--text-secondary); font-size: 1.2rem; max-width: 600px; margin: 0 auto 30px auto;">
-        Seamless telemedicine appointment scheduling connecting patients with trusted healthcare professionals.
-    </p>
-
+<div style="animation: fadeIn 0.6s ease-out forwards;">
     {% if not user.is_authenticated %}
-        <!-- Call to Action for guests -->
-        <div style="display: flex; gap: 20px; justify-content: center;">
-            <a href="{% url 'registration' %}" class="btn btn-primary" style="font-size: 1.1rem; padding: 12px 30px;">
-                <span class="material-icons">person_add</span> Create an Account
-            </a>
-            <a href="{% url 'login' %}" class="btn btn-secondary" style="font-size: 1.1rem; padding: 12px 30px;">
-                <span class="material-icons">login</span> Log In
-            </a>
+        <!-- Professional Hero Section for Guests -->
+        <div style="text-align: center; padding: 100px 20px; background: linear-gradient(135deg, rgba(30, 136, 229, 0.05), rgba(142, 36, 170, 0.05)); border-radius: 30px; margin-bottom: 50px;">
+            <h1 style="color: var(--primary-blue); font-size: 3.5rem; margin-bottom: 20px; font-weight: 800;">Modern Telemedicine<br><span style="color: var(--accent-purple);">Simplified.</span></h1>
+            <p style="color: var(--text-secondary); font-size: 1.3rem; max-width: 700px; margin: 0 auto 40px auto; line-height: 1.6;">
+                Seamlessly connect with trusted healthcare professionals. Book appointments, manage consultations, and access your medical history—all in one secure platform.
+            </p>
+            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                <a href="{% url 'registration' %}" class="btn btn-primary" style="font-size: 1.2rem; padding: 16px 40px; box-shadow: 0 10px 20px rgba(30, 136, 229, 0.2);">
+                    <span class="material-icons">person_add</span> Get Started Now
+                </a>
+                <a href="{% url 'login' %}" class="btn btn-secondary" style="font-size: 1.2rem; padding: 16px 40px;">
+                    <span class="material-icons">login</span> Log In
+                </a>
+            </div>
         </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; padding: 40px 0;">
+            <div style="text-align: center; padding: 20px;">
+                <div style="width: 70px; height: 70px; background: #E3F2FD; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: var(--primary-blue);">
+                    <span class="material-icons" style="font-size: 2.5rem;">verified</span>
+                </div>
+                <h3 style="margin-bottom: 10px;">Verified Doctors</h3>
+                <p style="color: var(--text-secondary);">Every professional on our platform goes through a rigorous verification process.</p>
+            </div>
+            <div style="text-align: center; padding: 20px;">
+                <div style="width: 70px; height: 70px; background: #F3E5F5; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: var(--accent-purple);">
+                    <span class="material-icons" style="font-size: 2.5rem;">security</span>
+                </div>
+                <h3 style="margin-bottom: 10px;">Secure Data</h3>
+                <p style="color: var(--text-secondary);">Your medical history and personal data are protected with industry-leading encryption.</p>
+            </div>
+            <div style="text-align: center; padding: 20px;">
+                <div style="width: 70px; height: 70px; background: #E8F5E9; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: var(--success-color);">
+                    <span class="material-icons" style="font-size: 2.5rem;">speed</span>
+                </div>
+                <h3 style="margin-bottom: 10px;">Fast Booking</h3>
+                <p style="color: var(--text-secondary);">Find a doctor and book your consultation in less than 2 minutes.</p>
+            </div>
+        </div>
+
     {% else %}
-        <!-- Dashboard overview for logged in users -->
-        <div class="grid-cards" style="margin-top: 40px; text-align: left;">
+        <!-- Dashboard for Authenticated Users -->
+        <div style="margin-bottom: 40px;">
+            <h1 style="font-size: 2.2rem; color: var(--text-primary); margin-bottom: 10px;">Hello, <span style="color: var(--primary-blue);">{{ user.email }}</span></h1>
+            <p style="color: var(--text-secondary); font-size: 1.1rem;">Welcome to your YourDoctorHere dashboard.</p>
+        </div>
+
+        <div class="grid-cards" style="margin-top: 30px;">
             {% if user.entity == 'Patient' %}
-                <div class="card">
-                    <h3 class="card-title"><span class="material-icons" style="vertical-align: middle;">search</span> Find a Doctor</h3>
-                    <p style="color: var(--text-secondary); margin-bottom: 20px;">Search our directory of verified professionals by specialty and city.</p>
+                <div class="card" style="border-top: 5px solid var(--primary-blue);">
+                    <div style="width: 50px; height: 50px; background: #E3F2FD; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: var(--primary-blue);">
+                        <span class="material-icons">search</span>
+                    </div>
+                    <h3 class="card-title">Find a Doctor</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 25px; min-height: 50px;">Search our directory of verified professionals by specialty and city.</p>
                     <a href="{% url 'medical_doctor_directory' %}" class="btn btn-primary">Search Doctors</a>
                 </div>
-                <div class="card">
-                    <h3 class="card-title"><span class="material-icons" style="vertical-align: middle;">event</span> My Appointments</h3>
-                    <p style="color: var(--text-secondary); margin-bottom: 20px;">Manage your upcoming and past consultations.</p>
+                <div class="card" style="border-top: 5px solid var(--secondary-blue);">
+                    <div style="width: 50px; height: 50px; background: #E1F5FE; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: var(--secondary-blue);">
+                        <span class="material-icons">event</span>
+                    </div>
+                    <h3 class="card-title">My Appointments</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 25px; min-height: 50px;">Manage your upcoming and past consultations with ease.</p>
                     <a href="{% url 'my_appointments' %}" class="btn btn-secondary">View Appointments</a>
                 </div>
-                <div class="card">
-                    <h3 class="card-title"><span class="material-icons" style="vertical-align: middle;">history</span> Medical History</h3>
-                    <p style="color: var(--text-secondary); margin-bottom: 20px;">Access your past diagnoses and prescriptions.</p>
+                <div class="card" style="border-top: 5px solid var(--accent-purple);">
+                    <div style="width: 50px; height: 50px; background: #F3E5F5; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: var(--accent-purple);">
+                        <span class="material-icons">history</span>
+                    </div>
+                    <h3 class="card-title">Medical History</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 25px; min-height: 50px;">Access your past diagnoses, prescriptions, and medical notes.</p>
                     <a href="{% url 'my_history' %}" class="btn btn-secondary">View History</a>
                 </div>
             {% elif user.entity == 'Doctor' %}
-                <div class="card">
-                    <h3 class="card-title"><span class="material-icons" style="vertical-align: middle;">event_available</span> Manage Slots</h3>
-                    <p style="color: var(--text-secondary); margin-bottom: 20px;">Set your weekly availability and block out unavailable dates.</p>
+                <div class="card" style="border-top: 5px solid var(--primary-blue);">
+                    <div style="width: 50px; height: 50px; background: #E3F2FD; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: var(--primary-blue);">
+                        <span class="material-icons">event_available</span>
+                    </div>
+                    <h3 class="card-title">Manage Slots</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 25px; min-height: 50px;">Set your weekly availability and block out specific dates.</p>
                     <a href="{% url 'my_slots' %}" class="btn btn-primary">Manage Schedule</a>
                 </div>
-                <div class="card">
-                    <h3 class="card-title"><span class="material-icons" style="vertical-align: middle;">people</span> Appointments</h3>
-                    <p style="color: var(--text-secondary); margin-bottom: 20px;">Review requested appointments and manage your daily consultations.</p>
+                <div class="card" style="border-top: 5px solid var(--secondary-blue);">
+                    <div style="width: 50px; height: 50px; background: #E1F5FE; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: var(--secondary-blue);">
+                        <span class="material-icons">people</span>
+                    </div>
+                    <h3 class="card-title">Appointments</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 25px; min-height: 50px;">Review requested appointments and manage your consultations.</p>
                     <a href="{% url 'my_appointments' %}" class="btn btn-secondary">View Appointments</a>
                 </div>
-                <div class="card">
-                    <h3 class="card-title"><span class="material-icons" style="vertical-align: middle;">history</span> Patient History</h3>
-                    <p style="color: var(--text-secondary); margin-bottom: 20px;">Review past consultations and medical notes you've written.</p>
+                <div class="card" style="border-top: 5px solid var(--accent-purple);">
+                    <div style="width: 50px; height: 50px; background: #F3E5F5; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: var(--accent-purple);">
+                        <span class="material-icons">history</span>
+                    </div>
+                    <h3 class="card-title">Patient History</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 25px; min-height: 50px;">Review past consultations and patient medical histories.</p>
                     <a href="{% url 'my_history' %}" class="btn btn-secondary">Consultation History</a>
                 </div>
             {% endif %}

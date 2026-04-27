@@ -37,7 +37,9 @@
                     <a href="{% url 'my_history' %}">Consultations</a>
                     <a href="{% url 'doctor_profile' user.doctor.uuid %}">Profile</a>
                 {% endif %}
-                <!-- A logout button could be here but keeping with existing structure where users might logout from profile -->
+                <a href="{% url 'logout' %}" style="margin-left: 10px; font-size: 0.9rem; padding: 6px 12px; border: 1px solid rgba(255,255,255,0.4); color: white; display: flex; align-items: center; gap: 5px; background: none; border-radius: 8px; text-decoration: none; transition: all 0.3s;">
+                    <span class="material-icons" style="font-size: 1.1rem;">logout</span> Logout
+                </a>
             {% else %}
                 <a href="{% url 'login' %}">Login</a>
                 <a href="{% url 'registration' %}">Register</a>
@@ -60,10 +62,10 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Footer -->
+    <!-- Footer >
     <footer>
         <p>&copy; 2026 YourDoctorHere. All rights reserved.</p>
-    </footer>
+    </footer-->
 
     <!-- Custom JavaScript -->
     <script src="{% static 'js/main.js' %}"></script>
