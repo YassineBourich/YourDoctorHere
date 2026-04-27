@@ -59,8 +59,6 @@ def doctor_directory(request):
     """
     Displays a searchable list of doctors.
     
-    Why we prefetch `specialty` and calculate availability here:
-    Using `select_related` prevents the N+1 query problem when listing doctors.
     The availability calculation allows patients to immediately see if a doctor
     is worth clicking on, improving user experience and reducing server load from
     unnecessary profile views.
@@ -69,7 +67,7 @@ def doctor_directory(request):
         messages.error(request, "Only patients can search for doctors.")
         return redirect('home')
 
-    doctors = Doctor.objects.select_related('specialty').all().order_by('last_name', 'first_name')
+    doctors = Doctor.objects.all().order_by('last_name', 'first_name')
     form = DoctorSearchForm(request.GET or None)
 
     if form.is_valid():
@@ -114,7 +112,7 @@ def doctor_detail(request, doctor_uuid):
         messages.error(request, "Only patients can view doctor details.")
         return redirect('home')
 
-    doctor = get_object_or_404(Doctor.objects.select_related('specialty'), uuid=doctor_uuid)
+    doctor = get_object_or_404(Doctor, uuid=doctor_uuid)
     weekly_slots = doctor.weekly_slots.filter(is_active=True).order_by('day_of_week', 'start_time')
     blocked_dates = doctor.blocked_dates.filter(date__gte=date.today()).order_by('date')
 

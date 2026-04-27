@@ -12,7 +12,40 @@ document.addEventListener('DOMContentLoaded', () => {
         const text = msg.innerText;
         showToast(type, text);
     });
+
+    // Initialize password toggles
+    initPasswordToggles();
 });
+
+function initPasswordToggles() {
+    const passwordInputs = document.querySelectorAll('input[type="password"]');
+    passwordInputs.forEach(input => {
+        // Wrap the input if it's not already wrapped
+        if (!input.parentElement.classList.contains('password-wrapper')) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'password-wrapper';
+            input.parentNode.insertBefore(wrapper, input);
+            wrapper.appendChild(input);
+
+            const toggleBtn = document.createElement('button');
+            toggleBtn.type = 'button';
+            toggleBtn.className = 'password-toggle';
+            toggleBtn.innerHTML = '<span class="material-icons">visibility_off</span>';
+            
+            toggleBtn.addEventListener('click', () => {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    toggleBtn.innerHTML = '<span class="material-icons">visibility</span>';
+                } else {
+                    input.type = 'password';
+                    toggleBtn.innerHTML = '<span class="material-icons">visibility_off</span>';
+                }
+            });
+            
+            wrapper.appendChild(toggleBtn);
+        }
+    });
+}
 
 /**
  * Creates and displays a toast notification.
