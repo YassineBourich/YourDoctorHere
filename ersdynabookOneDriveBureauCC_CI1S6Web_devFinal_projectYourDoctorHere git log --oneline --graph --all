@@ -1,0 +1,72 @@
+* [33mfbeb4f4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmedical_branch[m[33m, [m[1;31morigin/medical_branch[m[33m)[m your message
+*   [33mcacc16d[m Merge origin/main into medical_branch
+[32m|[m[33m\[m  
+[32m|[m * [33mcee0ebd[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Implementing some API endpoints
+[32m|[m * [33mc6a1b3b[m Finishing password recovery
+[32m|[m * [33me3ad952[m Finishing change password form
+[32m|[m * [33mca0d0e8[m Working on change password form
+[32m|[m * [33m0c6b1b6[m Adding editing and deleting profile
+[32m|[m * [33m97133b5[m Working on profile
+[32m|[m * [33m5401536[m Fixing models design
+[32m|[m * [33m52d12a0[m merging with medical changes
+[32m|[m *   [33m2d82dc5[m Merge branch 'medical_branch'
+[32m|[m [34m|[m[35m\[m  
+[32m|[m * [35m|[m [33m57c6f7e[m Working on profile
+* [35m|[m [35m|[m [33m777fe59[m Medical views, forms and urls
+* [35m|[m [35m|[m [33md7b1a49[m new views, and multiple refinments
+[35m|[m [35m|[m[35m/[m  
+[35m|[m[35m/[m[35m|[m   
+* [35m|[m [33mb9b7dce[m medical application: added and modified some urls and their corresponding views. read comments to understand the logic
+* [35m|[m [33md170949[m merging from main
+[36m|[m[35m\[m[35m|[m 
+[36m|[m * [33m561bc2b[m[33m ([m[1;32mmain[m[33m)[m Working on email verification
+[36m|[m * [33m99c3079[m Login implementation and account activation
+[36m|[m * [33m21979af[m Fixing conflicting commits
+[36m|[m * [33meaaac9a[m Finishing registration
+[36m|[m *   [33mfc558b5[m Merge branch 'main' of https://github.com/YassineBourich/YourDoctorHere sh: line 1: q: command not found
+[36m|[m [1;32m|[m[1;33m\[m  
+[36m|[m [1;32m|[m *   [33mc99e7ac[m Merge pull request #1 from YassineBourich/medical_branch
+[36m|[m [1;32m|[m [1;34m|[m[1;35m\[m  
+[36m|[m * [1;34m|[m [1;35m|[m [33m065ba8f[m Finishing registration
+* [1;35m|[m [1;34m|[m [1;35m|[m [33mdb149ed[m .gitignore issues
+[1;35m|[m [1;35m|[m[1;35m_[m[1;34m|[m[1;35m/[m  
+[1;35m|[m[1;35m/[m[1;35m|[m [1;34m|[m   
+* [1;35m|[m [1;34m|[m [33m73fbcfa[m added cancel_appointment, complete_appointment and confirm_appointment. still need to the other views
+* [1;35m|[m [1;34m|[m [33m19d8d0b[m added a view of appointment_detail to return info about a given appointment
+* [1;35m|[m [1;34m|[m [33mf6c04af[m fixing minor logic issues in urls
+* [1;35m|[m [1;34m|[m [33mc476c74[m Still have to agree on THE APP where to put WeeklySlot model
+* [1;35m|[m [1;34m|[m [33m95540e5[m Medical branch: added routing for appointments logic and url for patients history. Also, models. Note: i moved the PatientHistory model from users app to medical, and also weeklySlot
+* [1;35m|[m [1;34m|[m   [33mdf1590b[m fixing branches
+[1;36m|[m[1;34m\[m [1;35m\[m [1;34m\[m  
+[1;36m|[m [1;34m|[m [1;35m|[m[1;34m/[m  
+[1;36m|[m [1;34m|[m[1;34m/[m[1;35m|[m   
+[1;36m|[m * [1;35m|[m [33m8eb577d[m fixing branches issues
+[1;36m|[m [1;35m|[m[1;35m/[m  
+[1;36m|[m * [33m9c4538d[m Fixing a models field
+[1;36m|[m * [33m991d1dd[m Finishing models
+[1;36m|[m * [33m7d1a702[m Creating user model
+[1;36m|[m * [33m04b37ed[m Starting users app
+[1;36m|[m [31m|[m * [33m3165752[m[33m ([m[1;35mrefs/stash[m[33m)[m WIP on medical_branch: 3eb1b5b Merge branch 'medical_branch' of https://github.com/YassineBourich/YourDoctorHere into medical_branch
+[1;36m|[m [31m|[m[1;36m/[m[33m|[m 
+[1;36m|[m[1;36m/[m[31m|[m [33m|[m 
+[1;36m|[m [31m|[m * [33mdabab71[m index on medical_branch: 3eb1b5b Merge branch 'medical_branch' of https://github.com/YassineBourich/YourDoctorHere into medical_branch
+[1;36m|[m [31m|[m[1;36m/[m  
+[1;36m|[m[1;36m/[m[31m|[m   
+* [31m|[m   [33m3eb1b5b[m Merge branch 'medical_branch' of https://github.com/YassineBourich/YourDoctorHere into medical_branch
+[34m|[m[35m\[m [31m\[m  
+[34m|[m * [31m|[m [33mb764bfd[m Conflict fixed
+[34m|[m [36m|[m[31m\[m[31m|[m 
+* [36m|[m [31m|[m   [33m8eddac7[m Merge branch 'main' into medical_branch
+[36m|[m[31m\[m [36m\[m [31m\[m  
+[36m|[m [31m|[m[36m/[m [31m/[m  
+[36m|[m[36m/[m[31m|[m [31m/[m   
+[36m|[m [31m|[m[31m/[m    
+[36m|[m * [33m7ddea4f[m Other test
+[36m|[m * [33mcf0d259[m Other test
+* [1;33m|[m [33ma359a17[m test merging
+[1;33m|[m[1;33m/[m  
+* [33m6fffde4[m test branch medical
+* [33m14c4b72[m test commit
+* [33m865dcd3[m test commit
+* [33m66f1197[m Application creation
+* [33m4a269c6[m Project Start
