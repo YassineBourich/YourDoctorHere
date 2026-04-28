@@ -274,7 +274,7 @@ def profile_edit_view(request):
         elif entity == entities.DOCTOR:
             edit_form = DoctorForm(instance=profile)
     
-    return render(request, 'users/profiles/profile_edit.html', {'edit_form': edit_form})
+    return render(request, 'users/profiles/profile_edit.html', {'edit_form': edit_form, 'profile': profile})
 
 
 @login_required

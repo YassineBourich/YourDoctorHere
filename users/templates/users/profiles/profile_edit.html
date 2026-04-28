@@ -30,7 +30,7 @@
                     <!-- Avatar Picker at the top -->
                     <div class="avatar-picker-container" style="position: relative; display: flex; flex-direction: column; align-items: center; margin-bottom: 2rem; animation: fadeIn 0.5s ease-out;">
                         <div class="avatar-circle" id="avatar-trigger" style="width: 140px; height: 140px; border-radius: 50%; overflow: hidden; position: relative; cursor: pointer; border: 4px solid green; background-color: #f8f9fa; box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: all 0.3s ease;">
-                            <img id="avatar-preview" src="{% static 'images/default_avatar.jpg' %}" style="width: 100%; height: 100%; object-fit: cover;">
+                            <img id="avatar-preview" src="{{ profile.avatar_url }}" style="width: 100%; height: 100%; object-fit: cover;">
                             <div class="avatar-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s;">
                                 <span class="material-icons" style="color: white; font-size: 2.5rem;">photo_camera</span>
                             </div>
@@ -106,11 +106,18 @@
     const fileInput = document.getElementById('id_avatar');
     const preview = document.getElementById('avatar-preview');
     const clearBtn = document.getElementById('clear-avatar');
+    const clearCheckbox = document.getElementById('avatar-clear_id');
     const default_avatar = "{% static 'images/default_avatar.jpg' %}";
+    const current_avatar = "{{ profile.avatar_url }}";
+
+    // Show the clear button if the current avatar is not the default avatar
+    if (current_avatar !== default_avatar) {
+        clearBtn.style.display = 'flex';
+    }
 
     // Hide the real input
-    const parentGroup = fileInput.closest('.form-group') || fileInput.parentElement;
-    parentGroup.classList.add('avatar-field-group');
+    //const parentGroup = fileInput.closest('.form-group') || fileInput.parentElement;
+    //parentGroup.classList.add('avatar-field-group');
 
     // Trigger file input when clicking on the avatar circle
     trigger.addEventListener('click', function() {
@@ -126,6 +133,10 @@
                 preview.src = e.target.result;
             };
             reader.readAsDataURL(file);
+
+            if (clearCheckbox) {
+                clearCheckbox.checked = false;
+            }
             
             clearBtn.style.display = 'flex';
         }
@@ -136,6 +147,11 @@
         e.stopPropagation();
         fileInput.value = '';
         preview.src = default_avatar;
+        
+        // Clear the image from the model
+        if (clearCheckbox) {
+            clearCheckbox.checked = true;
+        }
         this.style.display = 'none';
     });
 </script>
