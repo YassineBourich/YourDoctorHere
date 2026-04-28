@@ -23,7 +23,7 @@
         <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
             <div style="margin-bottom: 20px;">
                 <h1 style="color: var(--primary-blue); margin-bottom: 8px; font-size: 2.2rem; display: flex; align-items: center; gap: 12px;">
-                    Dr. {{ doctor.user.first_name }} {{ doctor.user.last_name }}
+                    Dr. {{ doctor.first_name }} {{ doctor.last_name }}
                     {% if doctor.is_verified %}
                     <span class="material-icons" style="color: var(--success-color); font-size: 1.8rem;" title="Verified Professional">verified</span>
                     {% endif %}

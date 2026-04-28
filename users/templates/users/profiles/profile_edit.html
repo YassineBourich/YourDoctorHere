@@ -116,8 +116,8 @@
     }
 
     // Hide the real input
-    //const parentGroup = fileInput.closest('.form-group') || fileInput.parentElement;
-    //parentGroup.classList.add('avatar-field-group');
+    const parentGroup = fileInput.closest('.form-group') || fileInput.parentElement;
+    parentGroup.classList.add('avatar-field-group');
 
     // Trigger file input when clicking on the avatar circle
     trigger.addEventListener('click', function() {

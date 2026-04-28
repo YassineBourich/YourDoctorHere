@@ -230,21 +230,50 @@ def patient_profile_view(request, id):
     """
     user = get_user_by_uuid_or_404(id)
     profile = get_object_or_404(Patient, uuid=id)
-    history = PatientHistory.objects.filter(patient=profile).order_by('-at')[:5]
+    history_entries = PatientHistory.objects.select_related(
+        'patient',
+        'appointment',
+        'appointment__doctor',
+        'appointment__note',
+    )
+
+    if request.user.entity == entities.PATIENT:
+        history_entries = history_entries.filter(patient=profile)[:5]
+    else:
+        messages.error(request, "This account cannot access consultation history.")
+        return redirect('home')
     
     is_me = get_profile_of_user_or_404(request.user).uuid == id
         
-    return render(request, "users/profiles/profile.html", {'user': user, 'profile': profile, 'history': history, 'is_me': is_me, 'entities': {'PATIENT': entities.PATIENT, 'DOCTOR': entities.DOCTOR}})
+    return render(request, "users/profiles/profile.html", {'user': user, 'profile': profile, 'history': history_entries, 'is_me': is_me, 'entities': {'PATIENT': entities.PATIENT, 'DOCTOR': entities.DOCTOR}})
 
 
 @login_required
 def doctor_profile_view(request, id):
+    """
+    Displays doctor profile.
+    Why we check `is_me`:
+    We allow users to view other profiles (like patients viewing doctors they have appointments with),
+    but we use `is_me` to conditionally render private actions like 'Edit' or 'Delete' in the template.
+    """
     user = get_user_by_uuid_or_404(id)
     profile = get_object_or_404(Doctor, uuid=id)
+    history_entries = PatientHistory.objects.select_related(
+        'patient',
+        'appointment',
+        'appointment__doctor',
+        'appointment__note',
+    )
+
+    if request.user.entity == entities.DOCTOR:
+        history_entries = history_entries.filter(appointment__doctor=profile)[:5]
+    else:
+        messages.error(request, "This account cannot access consultation history.")
+        return redirect('home')
     
     is_me = get_profile_of_user_or_404(request.user).uuid == id
         
-    return render(request, "users/profiles/profile.html", {'user': user, 'profile': profile, 'history': None, 'is_me': is_me, 'entities': {'PATIENT': entities.PATIENT, 'DOCTOR': entities.DOCTOR}})
+    return render(request, "users/profiles/profile.html", {'user': user, 'profile': profile, 'history': history_entries, 'is_me': is_me, 'entities': {'PATIENT': entities.PATIENT, 'DOCTOR': entities.DOCTOR}})
 
 
 @login_required
@@ -395,9 +424,9 @@ def my_profile_api_view(request):
 @permission_classes([IsAuthenticated])
 def my_history_api_view(request):
     user = request.user
-    profile = get_object_or_404(PatientHistory, patient=user.patient)
+    history = get_object_or_404(PatientHistory, patient=user.patient)
 
-    serializer = PatientHistorySerializer(profile, context={'request': request})
+    serializer = PatientHistorySerializer(history, context={'request': request}, many=True)
     return Response(serializer.data)
 
 # Doctors API

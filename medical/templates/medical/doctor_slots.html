@@ -29,7 +29,7 @@
                         <span class="material-icons" style="font-size: 1.2rem;">schedule</span>
                         {{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}
                     </div>
-                    <a href="{% url 'slot_detail' doctor_uuid=doctor.uuid slot_id=slot.id %}" class="btn btn-primary" style="width: 100%;">Select Date</a>
+                    <a href="{% url 'slot_detail' doctor_uuid=doctor.uuid slot_id=slot.id %}" class="btn btn-primary" style="width: calc(100% - 40px);">Select Date</a>
                 </div>
                 {% endfor %}
             </div>

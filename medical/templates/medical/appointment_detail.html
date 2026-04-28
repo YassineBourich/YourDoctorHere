@@ -123,7 +123,7 @@
                 </form>
                 {% endif %}
                 
-                {% if not can_confirm and not can_complete and not can_cancel and not can_add_note %}
+                {% if not can_confirm and not can_complete and not can_cancel and not can_do_more_actions %}
                     <p style="color: var(--text-secondary); text-align: center; font-style: italic;">No actions available for this appointment.</p>
                 {% endif %}
             </div>

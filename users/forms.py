@@ -32,6 +32,13 @@ class UserRegistrationForm(forms.ModelForm):
         return cleaned_data
 
 class PatientForm(forms.ModelForm):
+    birth_date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={
+            'type': 'date', 
+            'class': 'form-control' # Optional: for Bootstrap or custom CSS
+        }),
+    )
     class Meta:
         model = Patient
         exclude = ['user']

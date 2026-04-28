@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404, redirect, render
-
+from django.db.models import Q
 from .forms import BlockedDateForm, DoctorSearchForm, MedicalNoteForm, WeeklySlotForm
 from .models import Appointment, BlockedDate, PatientHistory, WeeklySlot
 from users import entities
@@ -193,8 +193,9 @@ def appointment_detail(request, appointment_uuid):
         'is_the_doctor': is_the_doctor,
         'can_confirm': is_the_doctor and appointment.status == 'requested',
         'can_complete': is_the_doctor and appointment.status == 'confirmed',
-        'can_cancel': (is_the_patient or is_the_doctor) and appointment.status in ['requested', 'confirmed'],
+        'can_cancel': (is_the_patient or is_the_doctor) and appointment.status in {'requested', 'confirmed'},
         'can_add_note': is_the_doctor and appointment.status == 'completed',
+        'can_do_more_actions': appointment.status != 'completed',
     })
 
 
