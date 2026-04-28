@@ -36,7 +36,11 @@ def home(request):
     Logic for routing authenticated users to their respective dashboards is handled
     within the home template itself to reduce backend redirection overhead.
     """
-    return render(request, "home.html", {})
+    profile = None
+    if request.user.is_authenticated:
+        profile = get_profile_of_user_or_404(request.user)
+        
+    return render(request, "home.html", {'profile': profile})
 
 
 def registration_view(request):
@@ -170,13 +174,20 @@ def password_reset_demand_view(request):
     (if we want to prevent email enumeration) or specific errors depending on security policy.
     """
     if request.method == "POST":
-        email = str(request.POST.get('email'))
+        email = str(request.POST.get('email')).strip().lower()
         try:
             user = User.objects.get(email=email)
             send_password_reset_email(request, user)
             messages.success(request, 'An email was sent to you email address.')
-        except:
+            return redirect('login')
+        except User.DoesNotExist:
             messages.error(request, 'Invalide email address.')
+            return render(request, 'users/password_reset/password_reset_demand.html')
+        except Exception:
+            messages.error(request, 'Failed to send password reset email.')
+            return render(request, 'users/password_reset/password_reset_demand.html')
+
+    return render(request, 'users/password_reset/password_reset_demand.html')
     
 def reset_password_view(request, uidb64, token):
     try:

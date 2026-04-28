@@ -46,7 +46,7 @@
     {% else %}
         <!-- Dashboard for Authenticated Users -->
         <div style="margin-bottom: 40px;">
-            <h1 style="font-size: 2.2rem; color: var(--text-primary); margin-bottom: 10px;">Hello, <span style="color: var(--primary-blue);">{{ user.email }}</span></h1>
+            <h1 style="font-size: 2.2rem; color: var(--text-primary); margin-bottom: 10px;">Hello, <span style="color: var(--primary-blue);">{{ profile.first_name }} {{ profile.last_name | upper}}</span></h1>
             <p style="color: var(--text-secondary); font-size: 1.1rem;">Welcome to your YourDoctorHere dashboard.</p>
         </div>
 

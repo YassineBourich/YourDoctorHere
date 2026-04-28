@@ -36,6 +36,19 @@
                     {% csrf_token %}
                     <input type="hidden" name="entity" value="{{ PATIENT }}">
                     <div style="margin-bottom: 20px;">
+                        <!-- Avatar Picker at the top -->
+                        <div class="avatar-picker-container" style="position: relative; display: flex; flex-direction: column; align-items: center; margin-bottom: 2rem; animation: fadeIn 0.5s ease-out;">
+                            <div class="avatar-circle" id="patient-avatar-trigger" style="width: 140px; height: 140px; border-radius: 50%; overflow: hidden; position: relative; cursor: pointer; border: 4px solid var(--primary-blue); background-color: #f8f9fa; box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: all 0.3s ease;">
+                                <img id="patient-avatar-preview" src="{% static 'images/default_avatar.jpg' %}" style="width: 100%; height: 100%; object-fit: cover;">
+                                <div class="avatar-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s;">
+                                    <span class="material-icons" style="color: white; font-size: 2.5rem;">photo_camera</span>
+                                </div>
+                            </div>
+                            <button type="button" id="clear-patient-avatar" style="position: absolute; top: 0; right: 25%; margin-top: 12px; background: #fff; border: 1px solid #ddd; padding: 6px 12px; border-radius: 20px; color: gray; cursor: pointer; display: none; align-items: center; gap: 5px; font-weight: 500; font-size: 0.85rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: all 0.2s;">
+                                <span class="material-icons" style="font-size: 1.1rem;">close</span>
+                            </button>
+                        </div>
+
                         <h3 style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; color: var(--primary-blue);">Account Details</h3>
                         {{ user_form.as_div }}
                         
@@ -55,6 +68,19 @@
                     {% csrf_token %}
                     <input type="hidden" name="entity" value="{{ DOCTOR }}">
                     <div style="margin-bottom: 20px;">
+                        <!-- Avatar Picker at the top -->
+                        <div class="avatar-picker-container" style="display: flex; flex-direction: column; align-items: center; margin-bottom: 2rem; animation: fadeIn 0.5s ease-out;">
+                            <div class="avatar-circle" id="doctor-avatar-trigger" style="width: 140px; height: 140px; border-radius: 50%; overflow: hidden; position: relative; cursor: pointer; border: 4px solid var(--accent-purple); background-color: #f8f9fa; box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: all 0.3s ease;">
+                                <img id="doctor-avatar-preview" src="{% static 'images/default_avatar.jpg' %}" style="width: 100%; height: 100%; object-fit: cover;">
+                                <div class="avatar-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s;">
+                                    <span class="material-icons" style="color: white; font-size: 2.5rem;">photo_camera</span>
+                                </div>
+                            </div>
+                            <button type="button" id="clear-doctor-avatar" style="margin-top: 12px; background: #fff; border: 1px solid #ddd; padding: 6px 12px; border-radius: 20px; color: var(--error-color); cursor: pointer; display: none; align-items: center; gap: 5px; font-weight: 500; font-size: 0.85rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: all 0.2s;">
+                                <span class="material-icons" style="font-size: 1.1rem;">close</span> Remove Photo
+                            </button>
+                        </div>
+
                         <h3 style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; color: var(--accent-purple);">Account Details</h3>
                         {{ user_form.as_div }}
                         
@@ -82,6 +108,18 @@
         .branding-side { display: none !important; }
         .form-side { padding: 2rem 1rem !important; }
         .split-container { margin: -1rem !important; min-height: calc(100vh - 100px) !important; }
+    }
+    
+    .avatar-circle:hover .avatar-overlay {
+        opacity: 1 !important;
+    }
+    .avatar-circle:hover {
+        transform: scale(1.05);
+    }
+    
+    /* Hide the original avatar input group */
+    .avatar-field-group {
+        display: none !important;
     }
 </style>
 {% endblock %}
@@ -113,6 +151,46 @@
             patientBtn.style.borderBottomColor = 'transparent';
             patientBtn.style.color = 'var(--text-secondary)';
         });
+
+        // Avatar handling logic
+        const setupAvatarPicker = (formType) => {
+            const form = document.querySelector(`form[data-entity-form="${formType}"]`);
+            const trigger = document.getElementById(`${formType}-avatar-trigger`);
+            const preview = document.getElementById(`${formType}-avatar-preview`);
+            const clearBtn = document.getElementById(`clear-${formType}-avatar`);
+            const defaultAvatar = "{% static 'images/default_avatar.jpg' %}";
+            
+            // Find the actual avatar input
+            const realInput = form.querySelector('input[name="avatar"]');
+            if (realInput) {
+                // Hide the parent form-group
+                const parentGroup = realInput.closest('.form-group') || realInput.parentElement;
+                parentGroup.classList.add('avatar-field-group');
+                
+                trigger.addEventListener('click', () => realInput.click());
+                
+                realInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            preview.src = event.target.result;
+                            clearBtn.style.display = 'flex';
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+                
+                clearBtn.addEventListener('click', () => {
+                    realInput.value = '';
+                    preview.src = defaultAvatar;
+                    clearBtn.style.display = 'none';
+                });
+            }
+        };
+
+        setupAvatarPicker('patient');
+        setupAvatarPicker('doctor');
     });
 </script>
 {% endblock %}
